@@ -137,7 +137,7 @@ begin
 			promptVocabulary(dictName, promptType);
 		end
 	else
-		writeln('Unknown selection.');
+		writeln('Unknown selection!');
 
 	writeln;
 end.
