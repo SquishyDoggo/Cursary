@@ -6,20 +6,18 @@ uses SysUtils, StrUtils;
 const dictName = 'jadict';
 
 var 	promptType: Integer;
-	JaGe, GeJa, Mixd: String;	
+	JaEn, EnJa, Mixd: String;	
 	ornament, header: String;
 
 procedure promptVocabulary(dictName: String; promptType: Integer);
 var 	tfOut: TextFile;
 	i: Integer;
 	ALine: String;
-	ger, ja: String;
+	lang1, lang2: String;
 	vocDelim: Char;
 	trans: String;
 	NumVocs, CorrectVocs: Integer;
 	infoText, infoOrnament: String;
-
-
 begin
 	infoText := 'You have got x out of y words correct!';
 	vocDelim := '-';
@@ -30,41 +28,18 @@ begin
 	while not eof(tfOut) do
 	begin
 		readln(tfOut,ALine);
-		{ - partitioning in ger und Ja - }
-		ger := trim(copy(aline,1,pos(vocDelim,aline)-1));
-		ja := trim(copy(aline, pos(vocDelim,aline)+1,length(aline)));
-		
-		{ - german -> japanese - }
-		if promptType = 1 then
+		if promptType = 1 then 
 		begin
-			write(ger+':');
-			inc(NumVocs);
-			readln(trans);
-			trans:=trim(trans);
-			if CompareText(trans,ja)=0 then 
-			begin
-				writeln('Correct!');
-				inc(CorrectVocs);
-			end
-			else writeln('Wrong, correct answer: '+ja);
+			lang1 := trim(copy(aline,1,pos(vocDelim,aline)-1)); { en }
+			lang2 := trim(copy(aline, pos(vocDelim,aline)+1,length(aline))); { ja }
 		end
-			
-		{ - japanisch -> deutsch - }
-		else if promptType = 2 then
+
+		else if promptType = 2 then 
 		begin
-			write(ja+':');
-			inc(NumVocs);
-			readln(trans);
-			trans := trim(trans);
-			if CompareText(trans,ger)=0 then 
-			begin
-				writeln('Correct!');
-				inc(CorrectVocs);
-			end
-			else writeln('Wrong, correct answer: '+ger);
+			lang1 := trim(copy(aline, pos(vocDelim,aline)+1,length(aline))); { ja }
+			lang2 := trim(copy(aline,1,pos(vocDelim,aline)-1)); { en }
 		end
-		
-		{ - japanisch <-> deutsch - }
+
 		else if promptType = 3 then
 		begin
 			Randomize;
@@ -72,72 +47,59 @@ begin
 
 			if i = 0 then
 			begin
-				write(ger+':');
-				inc(NumVocs);
-				readln(trans);
-				trans := trim(trans);
-				if CompareText(trans,ja)=0 then 
-				begin
-					writeln('Correct!');
-					inc(CorrectVocs);
-				end
-				else writeln('Wrong, correct answer: '+ja);
+				lang1 := trim(copy(aline,1,pos(vocDelim,aline)-1)); { en }
+				lang2 := trim(copy(aline, pos(vocDelim,aline)+1,length(aline))); { ja }
 			end
-			else if i = 1 then
-			begin 
-				write(ja+':');
-				inc(NumVocs);
-				readln(trans);
-				trans := trim(trans);
-				if CompareText(trans,ger)=0 then 
-				begin 
-					writeln('Correct!');
-					inc(CorrectVocs);
-				end
-				else writeln('Wrong, correct answer: '+ger);
+
+			else
+			begin
+				lang1 := trim(copy(aline, pos(vocDelim,aline)+1,length(aline))); { ja }
+				lang2 := trim(copy(aline,1,pos(vocDelim,aline)-1)); { en }
 			end;
 		end;
-	end;
-	close(tfOut);
-	infoText[pos('x',infoText)] := IntToStr(CorrectVocs)[1];
-	infoText[pos('y',infoText)] := IntToStr(NumVocs)[1];
-	infoOrnament := DupeString('-',length(infoText)+4);
 
-	writeln; writeln(infoOrnament);
-	writeln('  '+infoText);
-	writeln(infoOrnament);
+		write(lang1+': '); inc(NumVocs);
+		readln(trans);
+		trans:=trim(trans);
+		if CompareText(trans,lang2)=0 then 
+		begin
+			writeln('Correct!');
+			inc(CorrectVocs);
+		end
+		else writeln('Wrong, correct answer: '+lang2);
+	end;
+		close(tfOut);
+		infoText[pos('x',infoText)] := IntToStr(CorrectVocs)[1];
+		infoText[pos('y',infoText)] := IntToStr(NumVocs)[1];
+		infoOrnament := DupeString('-',length(infoText)+4);
+	
+		writeln(infoOrnament);
+		writeln('  '+infoText);
+		writeln(infoOrnament);
 end;
 	
 begin
-	header := 'Japanese Vocabulary Trainer'; 	
-	GeJa := 'German    -> Japanese';
-	JaGe := 'Japanese  -> German';
-	Mixd := 'Japanese <-> German';
+	header := 'EnJa: The Japanese Vocabulary Trainer'; 	
+	EnJa := 'English  -> Japanese';
+	JaEn := 'English  <- Japanese';
+	Mixd := 'English <-> Japanese';
 	ornament := DupeString('-',length(header)+4);
 
 	writeln; writeln(ornament);
-	writeln('  '+header);
+	writeln('   '+header+'  ');
 	writeln(ornament);
-	writeln('[1] '+GeJa +#10#13 +'[2] '+JaGe +#10#13+ '[3] '+Mixd);
-	readln(promptType);
+	while true do
+	begin
+		writeln('[1] '+EnJa +#13#10 +'[2] '+JaEn +#13#10+ '[3] '+Mixd);
 
-	if promptType = 1 then
-		begin
-			writeln(GeJa + ' selected.');
-			promptVocabulary(dictName, promptType);
-		end
-	else if promptType = 2 then
-		begin
-			writeln(JaGe + ' selected.');
-			promptVocabulary(dictName, promptType);
-		end
-	else if promptType = 3 then
-		begin
-			writeln(Mixd + ' selected.');
-			promptVocabulary(dictName, promptType);
-		end
-	else
-		writeln('Unknown selection!');
-
-	writeln;
+		try
+			readln(promptType);
+			if (promptType in [1..3]) then promptVocabulary(dictName,promptType)
+			else writeln('Option ' + IntToStr(promptType) + ' does not exist!');
+		
+		except
+			on E: Exception do writeln('A wild '+E.Classname+' appeared!'+#13#10+'Try preventing '+E.Message+' next time.');
+		end;	
+		writeln;
+	end;
 end.
