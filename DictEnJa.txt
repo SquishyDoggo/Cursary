@@ -2,6 +2,10 @@ person
 人
 ひと
 
+I;me;myself
+私
+わたし
+
 student
 学生
 がくせい
@@ -38,10 +42,6 @@ but
 who
 誰
 だれ
-
-I;me;myself
-私
-わたし
 
 quiet
 静か
