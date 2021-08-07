@@ -1,0 +1,198 @@
+person
+人
+ひと
+
+student
+学生
+がくせい
+
+yes
+うん
+
+tomorrow
+明⽇
+あした
+
+no
+ううん
+
+today
+今⽇
+きよう
+
+exam
+試験
+しけん
+
+friend
+友達
+ともだち
+
+healthy
+元気
+げんき
+
+but
+でも
+
+who
+誰
+だれ
+
+I;me;myself
+私
+わたし
+
+quiet
+静か
+しずか
+
+pretty;clean
+きれい
+
+kind
+親切
+しんせつ
+
+fish
+魚
+さかな
+
+likable;desirable
+好き
+すき
+
+meat
+肉
+にく
+
+vegetables
+野菜
+やさい
+
+distasteful;hateful
+嫌い
+きらい
+
+food
+食べ物
+たべもん
+
+tasty
+おいしい
+
+high;tall;expensive
+高い
+たかい
+
+building
+ビル
+
+price
+値段
+ねだん
+
+restaurant
+レストラン
+
+not very
+あまり
+
+good
+いい
+
+he;boyfriend
+彼
+かれ
+
+cool;handsome
+かこいい
+
+to eat
+食べる
+たべる
+
+to understand
+分かる
+わかる
+
+to see
+見る
+みる
+
+to sleep
+寝る
+ねる
+
+to wake;to occur
+起きる
+おきる
+
+to think
+考える
+かんがえる
+
+to teach;to inform
+教える
+おしえる
+
+to come out
+出る
+でる
+
+to exist
+いる
+
+to wear
+着る
+きる
+
+to speak
+話す
+はなす
+
+to ask;to listen
+聞く
+きく
+
+to swim
+泳ぐ
+およぐ
+
+to play
+遊ぶ
+あそぶ
+
+to wait
+待つ
+まつ
+
+to drink
+飲む
+のむ
+
+to buy
+買う
+かう
+
+to exist
+ある
+
+to die
+死ね
+しね
+
+to do
+する
+
+to come
+来る
+くる
+
+money
+お金
+おかね
+
+cat
+猫
+ねこ
