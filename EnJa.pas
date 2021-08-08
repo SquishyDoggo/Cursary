@@ -104,11 +104,7 @@ begin
 		if (CompareText(userTrans,VocRec.AllVoc[i][2]) <> 0) and (CompareText(userTrans,VocRec.AllVoc[i][3]) <> 0) then { Kanji AND Hiragana are wrongly translated }
 			if VocRec.AllVoc[i][3] <> '' then writeln('Incorrect. Correct answer: '+VocRec.AllVoc[i][2]+' ['+VocRec.AllVoc[i][3]+']')
 			else writeln('Incorrect. Correct answer: '+VocRec.AllVoc[i][2])
-		else if CompareText(userTrans,VocRec.AllVoc[i][2]) = 0 then
-		begin
-			if VocRec.AllVoc[i][3] <> '' then writeln('Correct. Pronunciation: '+VocRec.AllVoc[i][3]+'.')
-			else writeln('Correct.');
-		end
+		else if CompareText(userTrans,VocRec.AllVoc[i][2]) = 0 then writeln('Correct.')
 		else if (CompareText(userTrans,VocRec.AllVoc[i][3]) = 0) and (VocRec.AllVoc[i][3] <> '') then
 			writeln('Correct. Kanji notation exists: '+VocRec.AllVoc[i][2]+' ['+VocRec.AllVoc[i][3]+']')
 		else 	writeln('Oh oh, this statement should not have been reached!');
@@ -161,15 +157,10 @@ begin
 			if (CompareText(userTrans,VocRec.AllVoc[i][2]) <> 0) and (CompareText(userTrans,VocRec.AllVoc[i][3]) <> 0) then 
 				if VocRec.AllVoc[i][3] <> '' then writeln('Incorrect. Correct answer: '+VocRec.AllVoc[i][2]+' ['+VocRec.AllVoc[i][3]+']')
 				else writeln('Incorrect. Correct answer: '+VocRec.AllVoc[i][2])
-			else if CompareText(userTrans,VocRec.AllVoc[i][2]) = 0 then
-			begin
-				if VocRec.AllVoc[i][3] <> '' then writeln('Correct. Pronunciation: '+VocRec.AllVoc[i][3]+'.')
-				else writeln('Correct.');
-			end
+			else if CompareText(userTrans,VocRec.AllVoc[i][2]) = 0 then writeln('Correct.')
 			else if (CompareText(userTrans,VocRec.AllVoc[i][3]) = 0) and (VocRec.AllVoc[i][3] <> '') then
 				writeln('Correct. Kanji notation exists: '+VocRec.AllVoc[i][2]+' ['+VocRec.AllVoc[i][3]+']')
-			else 	writeln('Oh oh, this statement should not have been reached!');
-
+			else 	writeln('A wild unhandled statement appeard. Catch your current vocabulary and report it!');
 			writeln;
 		end
 		else 
@@ -193,14 +184,19 @@ begin
 	CreateOrnament(ProgramName,'-',9);
 	writeln;
 	writeln('[E]nglish -> Japanese'+#9#9+'[J]apanese -> English'+#9#9+'[M]ixed');
-	repeat
-		writeln;
-		write('Query type: ');
-		readln(userPromptDirection);
-		if CompareText(userPromptDirection,'e')=0 then promptVocEnJa(dictName)
-		else if CompareText(userPromptDirection,'j')=0 then promptVocJaEn(dictName)
-		else if CompareText(userPromptDirection,'m')=0 then promptVocMixed(dictName)
-		else writeln('Unknown input. Use [E], [J] or [M].');
-	until userPromptDirection in ['e','E','j','J','m','M'];
+	try
+		repeat
+			writeln;
+			write('Query type: ');
+			readln(userPromptDirection);
+			writeln;
+			if CompareText(userPromptDirection,'e')=0 then promptVocEnJa(dictName)
+			else if CompareText(userPromptDirection,'j')=0 then promptVocJaEn(dictName)
+			else if CompareText(userPromptDirection,'m')=0 then promptVocMixed(dictName)
+			else writeln('Unknown input. Use [E], [J] or [M].');
+		until userPromptDirection in ['e','E','j','J','m','M'];
+	except on E:Exception do 
+		writeln('A wild '+E.ClassName+' has appeared.'+#13#10+'It was lured by '+E.Message+'.');
+	end;
 	
 end.
