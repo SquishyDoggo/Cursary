@@ -6,7 +6,7 @@ Currently __EnJa__ is only supported on GNU/Linux.\
 If `git` is installed simply clone the repository with `git clone https://github.com/SquishyDoggo/EnJa.git`, or download the zip folder. Do not forget to install a japanese font and input method if not already present.
 
 ## Compilation ##
-If changes have been made to the source file _EnJa.pas_, use `fpc /path/to/EnJa.pas` to recompile it. Naturally this assumes the _free pascal compiler_ [fpc](https://www.freepascal.org) is installed. 
+If changes have been made to the source file _EnJa.pas_, use `fpc /path/to/EnJa.pas` to recompile it, assuming the _free pascal compiler_ [fpc](https://www.freepascal.org) is installed. 
 
 ## Usage ##
 Run the executable in a terminal by specifying the full path, or with `./EnJa` inside the project directory, or just with `EnJa` after adding it to your `$PATH`.\
