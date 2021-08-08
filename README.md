@@ -15,3 +15,5 @@ When executed one can choose between three options:
 ## Dictionary File ##
 Vocabulary inside the dictionary file is stored in 3-tuples and follows a preset structure. The first line contains the english word. If multiple english words point to the same japanese word they may be separated by semicolons. The japanese counterpart is stored in the line below. If it features kanji-characters, then the third line contains the pronunciation of the japanese word in hiragana. If it exists only of kana, the third line is left empty.
 
+## Showcase ##
+![EnJa](https://user-images.githubusercontent.com/85826275/128639948-0f9a7a57-b4ee-477c-99c5-a6872f39a593.gif)
