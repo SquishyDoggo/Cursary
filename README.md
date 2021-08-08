@@ -20,5 +20,6 @@ When executed the user is presented 3 options:
 
 ## Dictionary File ##
 Vocabulary inside the dictionary file is stored in 3-tuples and follows a preset structure.\
-The first line contains the english word. If multiple english words point to the same japanese word they may be separated by semicolons. The japanese counterpart is stored in the line below. If it features kanji-characters, then the third line contains the pronunciation of the japanese word in hiragana. If it exists only of kana, the third line is left empty.
+The first line contains the english word. If multiple english words point to the same japanese word they may be separated by semicolons. The japanese counterpart is stored in the line below. If it features kanji-characters, then the third line contains the pronunciation of the japanese word in hiragana. If it exists only of kana, the third line is left empty.\
+__Side node:__ You can replace english with your language of choice as long as the conditions above are met. 
 
