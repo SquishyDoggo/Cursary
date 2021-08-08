@@ -7,7 +7,7 @@ Simply clone the repository and if not already present install a japanese font a
 If changes have been made to the source file _EnJa.pas_, use `fpc EnJa.pas` to recompile it. Naturally this assumes the _free pascal compiler_ [fpc](https://www.freepascal.org) is installed. 
 
 ## Usage ##
-Run the executable in a terminal, by adding it to your `$PATH`, specifying the full path `/path/to/EnJa` or with `./EnJa` inside the project directory.
+Run the executable in a terminal by specifying the full path, or with `./EnJa` inside the project directory, or by adding it to your `$PATH`.
 __EnJa__ scans _DictEnJa.txt_ for vocabulary, where words may be added in accordance with the notation used in the sample file.
 When executed the user is presented 3 options:
 1. __English -> Japanese__: Print english word and query the corresponding japanese word.
