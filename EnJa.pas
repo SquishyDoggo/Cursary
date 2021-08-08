@@ -25,7 +25,7 @@ var 	i: Integer;
 begin
 	result := false;
 	for i:=1 to MultiTransSize do 
-		if A = B[i] then
+		if (CompareText(A,B[i]) = 0) then
 		begin
 			result:=true;
 			break;
@@ -42,7 +42,7 @@ begin
 	ContainsMultiTrans := pos(MultiTransDelim,trans) > 0;
 	while pos(MultiTransDelim,trans) > 0 do 
 	begin
-		MultiTrans[i] := AnsiLowerCase(copy(trans,1,pos(MultiTransDelim,trans)-1));
+		MultiTrans[i] := copy(trans,1,pos(MultiTransDelim,trans)-1);
 		Delete(trans,1,pos(MultiTransDelim,trans));
 		Inc(i);
 	end;
@@ -65,7 +65,7 @@ begin
 	writeln;
 end;
 
-{ - get all vocabulary up to line numVoc - }
+{ get all vocabulary up to line numVoc }
 function GetNVoc(DictName: String): TVocRec;
 var	Dict: TextFile;
 	CurLine: String;
@@ -78,14 +78,14 @@ begin
 	repeat
 		ReadLn(Dict,CurLine);
 		while CurLine = '' do ReadLn(Dict,CurLine);
-		Result.AllVoc[i][1] := CurLine; {en}
+		result.AllVoc[i][1] := CurLine; {en}
 		ReadLn(Dict,CurLine);
-		Result.AllVoc[i][2] := CurLine; {ja}
+		result.AllVoc[i][2] := CurLine; {ja}
 		ReadLn(Dict,CurLine);
-		Result.AllVoc[i][3] := CurLine; {hira if present, else empty}
+		result.AllVoc[i][3] := CurLine; {hira if present, else empty}
 		Inc(i);
 	until eof(Dict);
-	Result.VocNum := i-1;
+	result.VocNum := i-1;
 	close(Dict);
 end;
 
@@ -101,14 +101,16 @@ begin
 		write(VocRec.AllVoc[i][1]+': ');
 		readln(UserTrans);
 
-		if (CompareText(UserTrans,VocRec.AllVoc[i][2]) <> 0) and (CompareText(UserTrans,VocRec.AllVoc[i][3]) <> 0) then { Kanji AND Hiragana are wrongly translated }
-			if VocRec.AllVoc[i][3] <> '' then writeln('Incorrect. Correct answer: '+VocRec.AllVoc[i][2]+' ['+VocRec.AllVoc[i][3]+']')
-			else writeln('Incorrect. Correct answer: '+VocRec.AllVoc[i][2])
-		else if CompareText(UserTrans,VocRec.AllVoc[i][2]) = 0 then writeln('Correct.')
-		else if (CompareText(UserTrans,VocRec.AllVoc[i][3]) = 0) and (VocRec.AllVoc[i][3] <> '') then
-			writeln('Correct. Kanji notation exists: '+VocRec.AllVoc[i][2]+' ['+VocRec.AllVoc[i][3]+']')
-		else 	writeln('Oh oh, this statement should not have been reached!');
-
+		if (UserTrans = '') and (VocRec.AllVoc[i][3] <> '') then writeln('Incorrect. Correct answer: '+VocRec.AllVoc[i][2]+' ['+VocRec.AllVoc[i][3]+']')
+		else if (UserTrans = '') and (VocRec.AllVoc[i][3] = '') then writeln('Incorrect. Correct answer: '+VocRec.AllVoc[i][2])
+		else
+			if (CompareText(UserTrans,VocRec.AllVoc[i][2]) <> 0) and (CompareText(UserTrans,VocRec.AllVoc[i][3]) <> 0) then { Kanji AND Hiragana are wrongly translated }
+				if VocRec.AllVoc[i][3] <> '' then writeln('Incorrect. Correct answer: '+VocRec.AllVoc[i][2]+' ['+VocRec.AllVoc[i][3]+']')
+				else writeln('Incorrect. Correct answer: '+VocRec.AllVoc[i][2])
+			else if CompareText(UserTrans,VocRec.AllVoc[i][2]) = 0 then writeln('Correct.')
+			else if (CompareText(UserTrans,VocRec.AllVoc[i][3]) = 0) and (VocRec.AllVoc[i][3] <> '') then
+				writeln('Correct. Kanji notation exists: '+VocRec.AllVoc[i][2]+' ['+VocRec.AllVoc[i][3]+']')
+			else 	writeln('A wild unhandled statement appeard. Catch your current vocabulary and report it!');
 		writeln;
 	end;
 end;
@@ -129,9 +131,7 @@ begin
 		else write(VocRec.AllVoc[i][2]+': ');
 		
 		readln(UserTrans);
-		UserTrans := AnsiLowerCase(UserTrans);
-
-		if not (UserTrans in MultiTrans) and (AnsiLowerCase(VocRec.AllVoc[i][1]) <> AnsiLowerCase(UserTrans)) then writeln('Incorrect. Correct answer: '+VocRec.AllVoc[i][1])
+		if (UserTrans = '') or ( not (UserTrans in MultiTrans) ) and ( CompareText(VocRec.AllVoc[i][1],UserTrans) <> 0 ) then writeln('Incorrect. Correct answer: '+VocRec.AllVoc[i][1])
 		else if (UserTrans in MultiTrans) then writeln('Correct. All solutions: '+VocRec.AllVoc[i][1])
 		else writeln('Correct.');
 		writeln;
@@ -154,13 +154,16 @@ begin
 			write(VocRec.AllVoc[i][1]+': ');
 			readln(UserTrans);
 	
-			if (CompareText(UserTrans,VocRec.AllVoc[i][2]) <> 0) and (CompareText(UserTrans,VocRec.AllVoc[i][3]) <> 0) then 
-				if VocRec.AllVoc[i][3] <> '' then writeln('Incorrect. Correct answer: '+VocRec.AllVoc[i][2]+' ['+VocRec.AllVoc[i][3]+']')
-				else writeln('Incorrect. Correct answer: '+VocRec.AllVoc[i][2])
-			else if CompareText(UserTrans,VocRec.AllVoc[i][2]) = 0 then writeln('Correct.')
-			else if (CompareText(UserTrans,VocRec.AllVoc[i][3]) = 0) and (VocRec.AllVoc[i][3] <> '') then
-				writeln('Correct. Kanji notation exists: '+VocRec.AllVoc[i][2]+' ['+VocRec.AllVoc[i][3]+']')
-			else 	writeln('A wild unhandled statement appeard. Catch your current vocabulary and report it!');
+			if (UserTrans = '') and (VocRec.AllVoc[i][3] <> '') then writeln('Incorrect. Correct answer: '+VocRec.AllVoc[i][2]+' ['+VocRec.AllVoc[i][3]+']')
+			else if (UserTrans = '') and (VocRec.AllVoc[i][3] = '') then writeln('Incorrect. Correct answer: '+VocRec.AllVoc[i][2])
+			else
+				if (CompareText(UserTrans,VocRec.AllVoc[i][2]) <> 0) and (CompareText(UserTrans,VocRec.AllVoc[i][3]) <> 0) then { Kanji AND Hiragana are wrongly translated }
+					if VocRec.AllVoc[i][3] <> '' then writeln('Incorrect. Correct answer: '+VocRec.AllVoc[i][2]+' ['+VocRec.AllVoc[i][3]+']')
+					else writeln('Incorrect. Correct answer: '+VocRec.AllVoc[i][2])
+				else if CompareText(UserTrans,VocRec.AllVoc[i][2]) = 0 then writeln('Correct.')
+				else if (CompareText(UserTrans,VocRec.AllVoc[i][3]) = 0) and (VocRec.AllVoc[i][3] <> '') then
+					writeln('Correct. Kanji notation exists: '+VocRec.AllVoc[i][2]+' ['+VocRec.AllVoc[i][3]+']')
+				else 	writeln('A wild unhandled statement appeard. Catch your current vocabulary and report it!');
 			writeln;
 		end
 		else 
@@ -170,14 +173,12 @@ begin
 			else write(VocRec.AllVoc[i][2]+': ');
 		
 			readln(UserTrans);
-			UserTrans := AnsiLowerCase(UserTrans);
-
-			if not (UserTrans in MultiTrans) and (AnsiLowerCase(VocRec.AllVoc[i][1]) <> AnsiLowerCase(UserTrans)) then writeln('Incorrect. Correct answer: '+VocRec.AllVoc[i][1])
-				else if (UserTrans in MultiTrans) then writeln('Correct. All solutions: '+VocRec.AllVoc[i][1])
-				else writeln('Correct.');
-				writeln;
-			end;
+			if (UserTrans = '') or ( not (UserTrans in MultiTrans) ) and ( CompareText(VocRec.AllVoc[i][1],UserTrans) <> 0 ) then writeln('Incorrect. Correct answer: '+VocRec.AllVoc[i][1])
+			else if (UserTrans in MultiTrans) then writeln('Correct. All solutions: '+VocRec.AllVoc[i][1])
+			else writeln('Correct.');
+			writeln;
 		end;
+	end;
 end;
 
 begin
