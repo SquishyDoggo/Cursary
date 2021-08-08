@@ -5,15 +5,32 @@ uses 	SysUtils, StrUtils;
 
 const 	dictName = 'DictEnJa.txt';
 	ProgramName = 'EnJa: The Terminal English-Japanese Vocabulary Trainer';
-	DictSize = 4000; { number of lines in dictionary }
+	MaxSize = 2000; { max number of vocabulary in dictionary, a triplet is considered to be one vocabulary }
 	MultiTransSize = 5;
 	MultiTransDelim = ';';
 
-type 	TAllVoc = array [1..DictSize,1..3] of String; { [x,y]: each x holds one vocabulary, i.e. english, kanji or hiragana and if still needed hiragana }
+type 	TAllVoc = array [1..MaxSize,1..3] of String; { [x,y]: each x holds one vocabulary, i.e. english, kanji or hiragana and if still needed hiragana }
 						      { [x,y]: each y holds one specific part of the vocabulary, i.e. y=1: english, y=2: kanji, y=3: hiragana }
 	TMultiTrans = array [1..MultiTransSize] of String;
 
+	TVocRec = record
+		AllVoc: TAllVoc;
+		VocNum: Integer;
+	end;
+
 var 	userPromptDirection: Char;
+
+Operator in (A: String; B: TMultiTrans): Boolean;
+var 	i: Integer;
+begin
+	result := false;
+	for i:=1 to MultiTransSize do 
+		if A = B[i] then
+		begin
+			result:=true;
+			break;
+		end;
+end;	
 
 { return multiple translations in array. If there is only one translation return array with empty string }
 function getMultiTrans(trans: String): TMultiTrans;
@@ -25,12 +42,12 @@ begin
 	containsMultiTrans := pos(MultiTransDelim,trans) > 0;
 	while pos(MultiTransDelim,trans) > 0 do 
 	begin
-		MultiTrans[i] := copy(trans,1,pos(MultiTransDelim,trans)-1);
+		MultiTrans[i] := AnsiLowerCase(copy(trans,1,pos(MultiTransDelim,trans)-1));
 		Delete(trans,1,pos(MultiTransDelim,trans));
 		Inc(i);
 	end;
 	if containsMultiTrans then MultiTrans[i] := trans
-	else MultiTrans[i] := ''; { if there is only one translation, return empty string }
+	else MultiTrans[i] := '@!^'; { if there is only one translation, return garbage}
 	result := MultiTrans;
 end;
 
@@ -49,52 +66,51 @@ begin
 end;
 
 { - get all vocabulary up to line numVoc - }
-function getNVoc(dictName: String; numVoc: Integer): TAllVoc;
+function getNVoc(dictName: String): TVocRec;
 var	dict: TextFile;
 	curLine: String;
-	vocIndex: Integer;
-	AllVoc: TAllVoc;
+	i: Integer;
 	
 begin
 	Assign(dict,dictName);
 	Reset(dict);
-	for vocIndex:=1 to numVoc do
-	begin
-		if eof(dict) then break;
+	i:=1;
+	repeat
 		ReadLn(dict,curLine);
 		while curLine = '' do ReadLn(dict,curLine);
-		AllVoc[vocIndex][1] := curLine; {en}
+		Result.AllVoc[i][1] := curLine; {en}
 		ReadLn(dict,curLine);
-		AllVoc[vocIndex][2] := curLine; {ja}
+		Result.AllVoc[i][2] := curLine; {ja}
 		ReadLn(dict,curLine);
-		AllVoc[vocIndex][3] := curLine; {hira if present, else empty}
-	end;
-	result := AllVoc;
+		Result.AllVoc[i][3] := curLine; {hira if present, else empty}
+		Inc(i);
+	until eof(dict);
+	Result.VocNum := i-1;
 	close(dict);
 end;
 
 { prompt user for english -> japanese translations }
-procedure promptVocEnJa(dictName: String; numVoc: Integer);
+procedure promptVocEnJa(dictName: String);
 var 	userTrans: String;
 	i: Integer;
-	AllVoc: TAllVoc;
+	VocRec: TVocRec;
 begin
-	AllVoc := getNVoc(dictName, numVoc);	
-	for i:=1 to numVoc do 
+	VocRec := getNVoc(dictName);	
+	for i:=1 to VocRec.VocNum do 
 	begin
-		write(AllVoc[i][1]+': ');
+		write(VocRec.AllVoc[i][1]+': ');
 		readln(userTrans);
 
-		if (CompareText(userTrans,AllVoc[i][2]) <> 0) and (CompareText(userTrans,AllVoc[i][3]) <> 0) then 
-			if AllVoc[i][3] <> '' then writeln('Incorrect. Correct answer: '+AllVoc[i][2]+' ['+AllVoc[i][3]+']')
-			else writeln('Incorrect. Correct answer: '+AllVoc[i][2])
-		else if CompareText(userTrans,AllVoc[i][2]) = 0 then
+		if (CompareText(userTrans,VocRec.AllVoc[i][2]) <> 0) and (CompareText(userTrans,VocRec.AllVoc[i][3]) <> 0) then { Kanji AND Hiragana are wrongly translated }
+			if VocRec.AllVoc[i][3] <> '' then writeln('Incorrect. Correct answer: '+VocRec.AllVoc[i][2]+' ['+VocRec.AllVoc[i][3]+']')
+			else writeln('Incorrect. Correct answer: '+VocRec.AllVoc[i][2])
+		else if CompareText(userTrans,VocRec.AllVoc[i][2]) = 0 then
 		begin
-			if AllVoc[i][3] <> '' then writeln('Correct. Pronunciation: '+AllVoc[i][3]+'.')
+			if VocRec.AllVoc[i][3] <> '' then writeln('Correct. Pronunciation: '+VocRec.AllVoc[i][3]+'.')
 			else writeln('Correct.');
 		end
-		else if (CompareText(userTrans,AllVoc[i][3]) = 0) and (AllVoc[i][3] <> '') then
-			writeln('Correct. Kanji notation exists: '+AllVoc[i][2]+' ['+AllVoc[i][3]+']')
+		else if (CompareText(userTrans,VocRec.AllVoc[i][3]) = 0) and (VocRec.AllVoc[i][3] <> '') then
+			writeln('Correct. Kanji notation exists: '+VocRec.AllVoc[i][2]+' ['+VocRec.AllVoc[i][3]+']')
 		else 	writeln('Oh oh, this statement should not have been reached!');
 
 		writeln;
@@ -103,91 +119,70 @@ end;
 
 { prompt user for japanese -> english translations }
 { need to add verification if more than one and less than all userTrans are given, currently message is always 'Incorrect.' }
-procedure promptVocJaEn(dictName: String; numVoc: Integer);
+procedure promptVocJaEn(dictName: String);
 var 	userTrans: String;
-	i,j: Integer;
-	AllVoc: TAllVoc;
+	i: Integer;
+	VocRec: TVocRec;
 	MultiTrans: TMultiTrans;
-	TransCorrect: Boolean;
 begin
-	AllVoc := getNVoc(dictName, numVoc);	
-	for i:=1 to numVoc do 
+	VocRec := getNVoc(dictName);	
+	for i:=1 to VocRec.VocNum do 
 	begin
-		multitrans := getmultitrans(allvoc[i][1]);
-		if AllVoc[i][3] <> '' then write(AllVoc[i][2]+' ['+AllVoc[i][3]+']'+': ')
-		else write(AllVoc[i][2]+': ');
+		multitrans := getmultitrans(VocRec.AllVoc[i][1]);
+		if VocRec.AllVoc[i][3] <> '' then write(VocRec.AllVoc[i][2]+' ['+VocRec.AllVoc[i][3]+']'+': ')
+		else write(VocRec.AllVoc[i][2]+': ');
 		
 		readln(userTrans);
 		userTrans := AnsiLowerCase(userTrans);
-		TransCorrect := false;
-		for j:= 1 to MultiTransSize do 
-		begin
-			if userTrans = AnsiLowerCase(MultiTrans[j]) then
-			begin
-				TransCorrect := true;
-				break;
-			end;
-		end;
 
-		if (not TransCorrect) and (AnsiLowerCase(AllVoc[i][1]) <> AnsiLowerCase(userTrans)) then writeln('Incorrect. Correct answer: '+AllVoc[i][1])
-		else if TransCorrect then writeln('Correct. All solutions: '+AllVoc[i][1])
+		if not (userTrans in multitrans) and (AnsiLowerCase(VocRec.AllVoc[i][1]) <> AnsiLowerCase(userTrans)) then writeln('Incorrect. Correct answer: '+VocRec.AllVoc[i][1])
+		else if (userTrans in multitrans) then writeln('Correct. All solutions: '+VocRec.AllVoc[i][1])
 		else writeln('Correct.');
 		writeln;
 	end;
 end;
 
-procedure promptVocMixed(dictName: String; numVoc: Integer);
+procedure promptVocMixed(dictName: String);
 var 	userTrans: String;
 	MultiTrans: TMultiTrans;
-	TransCorrect: Boolean;
-	j: Integer;
 	i,a: Integer;
-	AllVoc: TAllVoc;
+	VocRec: TVocRec;
 begin
-	AllVoc := getNVoc(dictName, numVoc);	
-	for i:=1 to numVoc do 
+	VocRec := getNVoc(dictName);	
+	for i:=1 to VocRec.VocNum do 
 	begin
 		Randomize;
 		a := Random(2);
 		if a = 0 then
 		begin
-			write(AllVoc[i][1]+': ');
+			write(VocRec.AllVoc[i][1]+': ');
 			readln(userTrans);
 	
-			if (CompareText(userTrans,AllVoc[i][2]) <> 0) and (CompareText(userTrans,AllVoc[i][3]) <> 0) then 
-				if AllVoc[i][3] <> '' then writeln('Incorrect. Correct answer: '+AllVoc[i][2]+' ['+AllVoc[i][3]+']')
-				else writeln('Incorrect. Correct answer: '+AllVoc[i][2])
-			else if CompareText(userTrans,AllVoc[i][2]) = 0 then
+			if (CompareText(userTrans,VocRec.AllVoc[i][2]) <> 0) and (CompareText(userTrans,VocRec.AllVoc[i][3]) <> 0) then 
+				if VocRec.AllVoc[i][3] <> '' then writeln('Incorrect. Correct answer: '+VocRec.AllVoc[i][2]+' ['+VocRec.AllVoc[i][3]+']')
+				else writeln('Incorrect. Correct answer: '+VocRec.AllVoc[i][2])
+			else if CompareText(userTrans,VocRec.AllVoc[i][2]) = 0 then
 			begin
-				if AllVoc[i][3] <> '' then writeln('Correct. Pronunciation: '+AllVoc[i][3]+'.')
+				if VocRec.AllVoc[i][3] <> '' then writeln('Correct. Pronunciation: '+VocRec.AllVoc[i][3]+'.')
 				else writeln('Correct.');
 			end
-			else if (CompareText(userTrans,AllVoc[i][3]) = 0) and (AllVoc[i][3] <> '') then
-				writeln('Correct. Kanji notation exists: '+AllVoc[i][2]+' ['+AllVoc[i][3]+']')
+			else if (CompareText(userTrans,VocRec.AllVoc[i][3]) = 0) and (VocRec.AllVoc[i][3] <> '') then
+				writeln('Correct. Kanji notation exists: '+VocRec.AllVoc[i][2]+' ['+VocRec.AllVoc[i][3]+']')
 			else 	writeln('Oh oh, this statement should not have been reached!');
 
 			writeln;
 		end
 		else 
 		begin
-			multitrans := getmultitrans(allvoc[i][1]);
-			if AllVoc[i][3] <> '' then write(AllVoc[i][2]+' ['+AllVoc[i][3]+']'+': ')
-			else write(AllVoc[i][2]+': ');
+			multitrans := getmultitrans(VocRec.AllVoc[i][1]);
+			if VocRec.AllVoc[i][3] <> '' then write(VocRec.AllVoc[i][2]+' ['+VocRec.AllVoc[i][3]+']'+': ')
+			else write(VocRec.AllVoc[i][2]+': ');
 		
 			readln(userTrans);
 			userTrans := AnsiLowerCase(userTrans);
-			TransCorrect := false;
-			for j:= 1 to MultiTransSize do 
-			begin
-				if userTrans = AnsiLowerCase(MultiTrans[j]) then
-				begin
-					TransCorrect := true;
-					break;
-				end;
-			end;
 
-			if (not TransCorrect) and (AnsiLowerCase(AllVoc[i][1]) <> AnsiLowerCase(userTrans)) then writeln('Incorrect. Correct answer: '+AllVoc[i][1])
-				else if TransCorrect then writeln('Correct. All solutions: '+AllVoc[i][1])
+			if not (userTrans in multitrans) and (AnsiLowerCase(VocRec.AllVoc[i][1]) <> AnsiLowerCase(userTrans)) then writeln('Incorrect. Correct answer: '+VocRec.AllVoc[i][1])
+				else if (userTrans in multitrans) then writeln('Correct. All solutions: '+VocRec.AllVoc[i][1])
 				else writeln('Correct.');
 				writeln;
 			end;
@@ -198,11 +193,14 @@ begin
 	CreateOrnament(ProgramName,'-',9);
 	writeln;
 	writeln('[E]nglish -> Japanese'+#9#9+'[J]apanese -> English'+#9#9+'[M]ixed');
-	writeln;
-	write('Query type: ');
-	readln(userPromptDirection);
-	if AnsiLowerCase(userPromptDirection) = 'e' then promptVocEnJa(dictName,DictSize)
-	else if AnsiLowerCase(userPromptDirection) = 'j' then promptVocJaEn(dictName,DictSize)
-	else if AnsiLowerCase(userPromptDirection) = 'm' then promptVocMixed(dictName,DictSize)
-	else writeln('Unknown input. Use [E], [J] or [M].');
+	repeat
+		writeln;
+		write('Query type: ');
+		readln(userPromptDirection);
+		if CompareText(userPromptDirection,'e')=0 then promptVocEnJa(dictName)
+		else if CompareText(userPromptDirection,'j')=0 then promptVocJaEn(dictName)
+		else if CompareText(userPromptDirection,'m')=0 then promptVocMixed(dictName)
+		else writeln('Unknown input. Use [E], [J] or [M].');
+	until userPromptDirection in ['e','E','j','J','m','M'];
+	
 end.
