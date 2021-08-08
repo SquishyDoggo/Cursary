@@ -3,7 +3,7 @@ Your friendly neighborhood cli vocabulary trainer for english and japanese.
 
 ## Installation ##
 Currently __EnJa__ is only supported on GNU/Linux.\
-Either download the zip folder, or if `git` is installed simply clone the repository with `git clone https://github.com/SquishyDoggo/EnJa.git`. If not already present install a japanese font and input method.
+If `git` is installed simply clone the repository with `git clone https://github.com/SquishyDoggo/EnJa.git`, or download the zip folder. Do not forget to install a japanese font and input method if not already present.
 
 ## Compilation ##
 If changes have been made to the source file _EnJa.pas_, use `fpc /path/to/EnJa.pas` to recompile it. Naturally this assumes the _free pascal compiler_ [fpc](https://www.freepascal.org) is installed. 
