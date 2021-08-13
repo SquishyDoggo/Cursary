@@ -1,3 +1,10 @@
+to talk
+しゃべる
+
+to go home
+帰る
+かえる
+
 person
 人
 ひと
@@ -13,9 +20,21 @@ student
 yes
 うん
 
+to enter
+入る
+はいる
+
 tomorrow
 明⽇
 あした
+
+to run
+走る
+はしる
+
+to cut
+切る
+きる
 
 no
 ううん
@@ -36,6 +55,14 @@ healthy
 元気
 げんき
 
+to decrease
+減る
+へる
+
+to know
+知る
+しる
+
 but
 でも
 
@@ -53,6 +80,10 @@ pretty;clean
 kind
 親切
 しんせつ
+
+to be in a hurry
+焦る
+あせる
 
 fish
 魚
@@ -78,6 +109,10 @@ food
 食べ物
 たべもん
 
+to limit
+限る
+かぎる
+
 tasty
 おいしい
 
@@ -100,6 +135,10 @@ not very
 
 good
 いい
+
+to kick
+蹴る
+ける
 
 he;boyfriend
 彼
@@ -140,7 +179,7 @@ to come out
 出る
 でる
 
-to exist
+to exist (animate)
 いる
 
 to wear
@@ -175,8 +214,12 @@ to buy
 買う
 かう
 
-to exist
+to exist (inanimate)
 ある
+
+to need
+要る
+いる
 
 to die
 死ね
@@ -196,3 +239,55 @@ money
 cat
 猫
 ねこ
+
+to be slippery
+滑る
+すべる
+
+to grasp
+握る
+にぎる
+
+to knead
+練る
+ねる
+
+to go;to come
+参る
+まいる
+
+to mingle
+交じる
+まじる
+
+to ridicule
+嘲る
+あざける
+
+to overturn
+覆る
+くつがえる
+
+to interrupt
+遮る
+さえぎる
+
+to abuse verbally
+罵る
+ののしる
+
+to twist
+捻る
+ひねる
+
+to turn over; to wave
+翻る
+ひるがえる
+
+to feel depressed
+滅入る
+めいる
+
+to be resurrected
+蘇る
+よみがえる

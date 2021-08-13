@@ -62,7 +62,7 @@ begin
 	ExpandedOrnament := DupeString(Ornament,OrnamentLength);
 	writeln(#10#13+ExpandedOrnament);
 	writeln(PadLeft(Header,length(Header)+Padding));
-	writeln(#10#13+ExpandedOrnament);
+	writeln(ExpandedOrnament);
 end;
 
 { create footer of program }
