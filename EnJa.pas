@@ -3,7 +3,7 @@ program EnJa;
 
 uses 	SysUtils, StrUtils;
 
-const 	DictName = 'DictEnJa.txt';
+const 	DictName = 'dicts/DictEnJa.txt';
 	ProgramName = 'EnJa: The Terminal English-Japanese Vocabulary Trainer';
 	MaxSize = 2000; 					{ max number of vocabulary in dictionary, a triplet is considered to be one vocabulary }
 	MultiTransSize = 5; 					{ max number of english words, that point to same japanese word }
