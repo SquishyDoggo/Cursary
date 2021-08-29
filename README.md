@@ -1,5 +1,5 @@
 # Cursary #
-Your friendly neighborhood cli vocabulary trainer for english and japanese.
+Your friendly neighborhood ncurses vocabulary trainer for english and japanese.
 
 ## Installation ##
 Clone the repository and run `make` inside the project directory.
