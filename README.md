@@ -17,5 +17,5 @@ In the options menu the user is presented 3 query types:
 ## Dictionary File ##
 Vocabulary inside the dictionary file is stored in 3-tuples and follows a preset structure.\
 The first line contains the english word. If multiple english words point to the same japanese word they may be separated by semicolons.\
-The japanese counterpart is stored in the line below. If it features kanji-characters, then the third line contains the pronunciation of the japanese word in hiragana. 
+The japanese counterpart is stored in the line below. If it features kanji-characters, then the third line contains furigana.
 If it exists only of kana, the third line is left empty.

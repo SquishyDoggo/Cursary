@@ -25,7 +25,7 @@ struct VocInfo {
 	int vocNum;
 	vector<string> en;
 	vector<string> ja;
-	vector<string> hira;
+	vector<string> furi;
 };
 
 const string opt1 = "Japanese -> English";
@@ -51,7 +51,7 @@ VocInfo getVocs(string dict) {
 		getline(dictFile,line);
 		Vocs.ja.push_back(line);
 		getline(dictFile,line);
-		Vocs.hira.push_back(line);
+		Vocs.furi.push_back(line);
 	}
 	dictFile.close();
 	Vocs.vocNum = Vocs.en.size()-1;
@@ -116,7 +116,7 @@ void mkOpt1Win(WINDOW * queries, WINDOW * reply, WINDOW * uInput, VocInfo Vocs, 
 	/* print query */
 	string ja = Vocs.ja[idx];
 	string en = Vocs.en[idx];
-	string hira = Vocs.hira[idx];
+	string furi = Vocs.furi[idx];
 	wattron(queries,COLOR_PAIR(1));
 	mvwprintw(queries, 0, queriesWidth/2-ja.length()/3, ja.c_str()); // divided by 6 because one ja char has a length of 3
 	wattroff(queries,COLOR_PAIR(1));
@@ -136,7 +136,7 @@ void mkOpt1Win(WINDOW * queries, WINDOW * reply, WINDOW * uInput, VocInfo Vocs, 
 		mvwprintw(reply, 0, 0, "false");
 		mvwprintw(reply, 1, 0, "answer:");
 		wattron(reply, COLOR_PAIR(1));
-		(hira.empty()) ? wprintw(reply, ja.c_str()) : wprintw(reply, "%s [%s]",ja.c_str(),hira.c_str()); 
+		(furi.empty()) ? wprintw(reply, ja.c_str()) : wprintw(reply, "%s [%s]",ja.c_str(),furi.c_str()); 
 		wattroff(reply, COLOR_PAIR(1));
 		wprintw(reply, " -> %s",en.c_str()); 
 		wrefresh(reply);
@@ -158,7 +158,7 @@ void mkOpt2Win(WINDOW * queries, WINDOW * reply, WINDOW * uInput, VocInfo Vocs, 
 	/* print query */
 	string en = Vocs.en[idx];
 	string ja = Vocs.ja[idx];
-	string hira = Vocs.hira[idx];
+	string furi = Vocs.furi[idx];
 	wattron(queries,COLOR_PAIR(1));
 	mvwprintw(queries, 0, queriesWidth/2-en.length()/2, en.c_str());
 	wattroff(queries,COLOR_PAIR(1));
@@ -173,7 +173,7 @@ void mkOpt2Win(WINDOW * queries, WINDOW * reply, WINDOW * uInput, VocInfo Vocs, 
 		mvwprintw(reply, 0, 0, "%s","correct");
 		wrefresh(reply);
 	}
-	else if (isSubSet(uTrans, hira)) {
+	else if (isSubSet(uTrans, furi)) {
 		wclear(reply);
 		mvwprintw(reply, 0, 0, "%s","correct, kanji notation: ");
 		wattron(reply,COLOR_PAIR(1));
@@ -188,7 +188,7 @@ void mkOpt2Win(WINDOW * queries, WINDOW * reply, WINDOW * uInput, VocInfo Vocs, 
 		wattron(reply, COLOR_PAIR(1));
 		wprintw(reply, en.c_str());
 		wattroff(reply, COLOR_PAIR(1));
-		(hira.empty()) ? wprintw(reply, " -> %s",ja.c_str()) : wprintw(reply, " -> %s [%s]",ja.c_str(),hira.c_str()); 
+		(furi.empty()) ? wprintw(reply, " -> %s",ja.c_str()) : wprintw(reply, " -> %s [%s]",ja.c_str(),furi.c_str()); 
 		wrefresh(reply);
 	}
 	wclear(queries);
