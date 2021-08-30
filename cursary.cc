@@ -105,7 +105,113 @@ void mkInputBox(WINDOW * winName) {
 	wrefresh(winName);
 }
 
-void mkOpt1Win(string dict) {
+void mkOpt1Win(WINDOW * queries, WINDOW * reply, WINDOW * uInput, VocInfo Vocs, int idx) {
+	curs_set(true); cbreak(); echo(); nonl(); intrflush(stdscr, false); keypad(stdscr, true);
+
+	init_pair(1, COLOR_BLUE, COLOR_BLACK);
+	int queriesWidth = 60;
+	int maxInputLen = 25;
+	char uTrans[maxInputLen];
+
+	/* print query */
+	string ja = Vocs.ja[idx];
+	string en = Vocs.en[idx];
+	string hira = Vocs.hira[idx];
+	wattron(queries,COLOR_PAIR(1));
+	mvwprintw(queries, 0, queriesWidth/2-ja.length()/3, ja.c_str()); // divided by 6 because one ja char has a length of 3
+	wattroff(queries,COLOR_PAIR(1));
+	wrefresh(queries);
+	/* print query */
+
+	/* get user input */
+	mvwgetnstr(uInput, 0, 1, uTrans,maxInputLen);
+	
+	if (isSubSet(uTrans, en)) {
+		wclear(reply);
+		mvwprintw(reply, 0, 0, "%s","correct");
+		wrefresh(reply);
+	}
+	else {
+		wclear(reply);
+		mvwprintw(reply, 0, 0, "false");
+		mvwprintw(reply, 1, 0, "answer:");
+		wattron(reply, COLOR_PAIR(1));
+		(hira.empty()) ? wprintw(reply, ja.c_str()) : wprintw(reply, "%s [%s]",ja.c_str(),hira.c_str()); 
+		wattroff(reply, COLOR_PAIR(1));
+		wprintw(reply, " -> %s",en.c_str()); 
+		wrefresh(reply);
+	}
+	wclear(queries);
+	wmove(uInput, 0, 0); wclrtoeol(uInput);
+	refresh();
+	/* get user input */
+}
+
+void mkOpt2Win(WINDOW * queries, WINDOW * reply, WINDOW * uInput, VocInfo Vocs, int idx) {
+	curs_set(true); cbreak(); echo(); nonl(); intrflush(stdscr, false); keypad(stdscr, true);
+
+	init_pair(1, COLOR_BLUE, COLOR_BLACK);
+	int queriesWidth = 60;
+	int maxInputLen = 25;
+	char uTrans[maxInputLen];
+
+	/* print query */
+	string en = Vocs.en[idx];
+	string ja = Vocs.ja[idx];
+	string hira = Vocs.hira[idx];
+	wattron(queries,COLOR_PAIR(1));
+	mvwprintw(queries, 0, queriesWidth/2-en.length()/2, en.c_str());
+	wattroff(queries,COLOR_PAIR(1));
+	wrefresh(queries);
+	/* print query */
+	
+	/* get user input */
+	mvwgetnstr(uInput, 0, 1, uTrans,maxInputLen);
+		
+	if (isSubSet(uTrans, ja)) {
+		wclear(reply);
+		mvwprintw(reply, 0, 0, "%s","correct");
+		wrefresh(reply);
+	}
+	else if (isSubSet(uTrans, hira)) {
+		wclear(reply);
+		mvwprintw(reply, 0, 0, "%s","correct, kanji notation: ");
+		wattron(reply,COLOR_PAIR(1));
+		wprintw(reply, ja.c_str());
+		wattroff(reply,COLOR_PAIR(1));
+		wrefresh(reply);
+	}
+	else {
+		wclear(reply);
+		mvwprintw(reply, 0, 0, "false");
+		mvwprintw(reply, 1, 0, "answer:");
+		wattron(reply, COLOR_PAIR(1));
+		wprintw(reply, en.c_str());
+		wattroff(reply, COLOR_PAIR(1));
+		(hira.empty()) ? wprintw(reply, " -> %s",ja.c_str()) : wprintw(reply, " -> %s [%s]",ja.c_str(),hira.c_str()); 
+		wrefresh(reply);
+	}
+	wclear(queries);
+	wmove(uInput, 0, 0); wclrtoeol(uInput);
+	refresh();
+	/* get user input */
+}
+
+void mkOpt3Win(WINDOW * queries, WINDOW * reply, WINDOW * uInput, VocInfo Vocs, int idx) {
+	curs_set(true); cbreak(); echo(); nonl(); intrflush(stdscr, false); keypad(stdscr, true);
+
+	/* randomly choose to query either ja->en or en->ja */
+	int rndm = rand() % 2;
+	if (rndm == 0) mkOpt1Win(queries,reply,uInput,Vocs,idx);
+	else mkOpt2Win(queries,reply,uInput,Vocs,idx);
+	/* randomly choose to query either ja->en or en->ja */
+
+	wclear(queries);
+	wmove(uInput, 0, 0); wclrtoeol(uInput);
+	refresh();
+}
+
+void queryVocs(string dict,int uOption) {
 	curs_set(true); cbreak(); echo(); nonl(); intrflush(stdscr, false); keypad(stdscr, true);
 	clear();
 
@@ -142,237 +248,16 @@ void mkOpt1Win(string dict) {
 	/* user input */
 
 	VocInfo Vocs = getVocs(dict);
-	init_pair(1, COLOR_BLUE, COLOR_BLACK);
-	char uTrans[] = "";
 
-	for (int i=0;i<Vocs.vocNum-1;++i) {
-		/* print query */
-		string ja = Vocs.ja[i];
-		string en = Vocs.en[i];
-		string hira = Vocs.hira[i];
-		wattron(queries,COLOR_PAIR(1));
-		mvwprintw(queries, 0, queriesWidth/2-ja.length()/3, ja.c_str()); // divided by 6 because one ja char has a length of 3
-		wattroff(queries,COLOR_PAIR(1));
-		wrefresh(queries);
-		/* print query */
-
-		/* get user input */
-		mvwgetnstr(uInput, 0, 1, uTrans,60);
-		
-		if (isSubSet(uTrans, en)) {
-			wclear(reply);
-			mvwprintw(reply, 0, 0, "%s","correct");
-			wrefresh(reply);
-		}
-		else {
-			wclear(reply);
-			mvwprintw(reply, 0, 0, "false");
-			mvwprintw(reply, 1, 0, "answer:");
-			wattron(reply, COLOR_PAIR(1));
-			(hira.empty()) ? wprintw(reply, ja.c_str()) : wprintw(reply, "%s [%s]",ja.c_str(),hira.c_str()); 
-			wattroff(reply, COLOR_PAIR(1));
-			wprintw(reply, " -> %s",en.c_str()); 
-			wrefresh(reply);
-		}
-		wclear(queries);
-		wmove(uInput, 0, 0); wclrtoeol(uInput);
-		refresh();
+	if (uOption == 1) 
+		for (int i=0; i<Vocs.vocNum-1; ++i) mkOpt1Win(queries,reply,uInput,Vocs,i);
+	if (uOption == 2) 
+		for (int i=0; i<Vocs.vocNum-1; ++i) mkOpt2Win(queries,reply,uInput,Vocs,i);
+	if (uOption == 3) {
+		srand(time(NULL)); // init random seed based on sys time
+		for (int i=0; i<Vocs.vocNum-1; ++i) mkOpt3Win(queries,reply,uInput,Vocs,i);
 	}
-	/* get user input */
-}
-
-void mkOpt2Win(string dict) {
-	curs_set(true); cbreak(); echo(); nonl(); intrflush(stdscr, false); keypad(stdscr, true);
-	clear();
-
-	int maxY, maxX; getmaxyx(stdscr, maxY, maxX);
-	WINDOW* frame = newwin(maxY, maxX, 0, 0);
-	refresh();
-	box(frame, 0, 0);
-	mvwprintw(frame, 0, 2, opt2.c_str());
-
-	/* queries window */
-	int queriesHeight = 3; int queriesWidth = 60;
-	int queriesPosY = maxY/4-queriesHeight/2; int queriesPosX = maxX/2-queriesWidth/2;
-	WINDOW * queries = newwin(queriesHeight, queriesWidth, queriesPosY, queriesPosX);
-	refresh();
-	/* queries window */
-
-	/* reply window */
-	int replyHeight, replyWidth, replyY, replyX;
-	replyHeight = 3;
-	replyWidth = 60;
-	replyY = 2*maxY/4-replyHeight/2;
-	replyX = maxX/2-replyWidth/2;
-
-	WINDOW * reply = newwin(replyHeight, replyWidth, replyY, replyX);
-	refresh();
-	/* reply window */
-
-	/* user input */
-	int uInputHeight = 2; int uInputWidth = 30;
-	int uInputPosY = 3*maxY/4-uInputHeight/2; int uInputPosX = (maxX-uInputWidth)/2;
-	WINDOW * uInput = newwin(uInputHeight, uInputWidth, uInputPosY, uInputPosX);
-	refresh();
-	mkInputBox(uInput);
-	/* user input */
-
-	VocInfo Vocs = getVocs(dict);
-	init_pair(1, COLOR_BLUE, COLOR_BLACK);
-	char uTrans[] = " ";
-
-	for (int i= 0; i<Vocs.vocNum-1;++i) {
-		/* print query */
-		string en = Vocs.en[i];
-		string ja = Vocs.ja[i];
-		string hira = Vocs.hira[i];
-		wattron(queries,COLOR_PAIR(1));
-		mvwprintw(queries, 0, queriesWidth/2-en.length()/2, en.c_str());
-		wattroff(queries,COLOR_PAIR(1));
-		wrefresh(queries);
-		/* print query */
-	
-		/* get user input */
-		mvwgetnstr(uInput, 0, 1, uTrans,60);
-		
-		if (isSubSet(uTrans, ja)) {
-			wclear(reply);
-			mvwprintw(reply, 0, 0, "%s","correct");
-			wrefresh(reply);
-		}
-		else if (isSubSet(uTrans, hira)) {
-			wclear(reply);
-			mvwprintw(reply, 0, 0, "%s","correct, kanji notation: ");
-			wattron(reply,COLOR_PAIR(1));
-			wprintw(reply, ja.c_str());
-			wattroff(reply,COLOR_PAIR(1));
-			wrefresh(reply);
-		}
-		else {
-			wclear(reply);
-			mvwprintw(reply, 0, 0, "false");
-			mvwprintw(reply, 1, 0, "answer:");
-			wattron(reply, COLOR_PAIR(1));
-			wprintw(reply, en.c_str());
-			wattroff(reply, COLOR_PAIR(1));
-			(hira.empty()) ? wprintw(reply, " -> %s",ja.c_str()) : wprintw(reply, " -> %s [%s]",ja.c_str(),hira.c_str()); 
-			wrefresh(reply);
-		}
-		wclear(queries);
-		wmove(uInput, 0, 0); wclrtoeol(uInput);
-		refresh();
-	}
-	/* get user input */
-}
-
-void mkOpt3Win(string dict) {
-	curs_set(true); cbreak(); echo(); nonl(); intrflush(stdscr, false); keypad(stdscr, true);
-	clear();
-
-	/* frame with option name */
-	int maxY, maxX; getmaxyx(stdscr, maxY, maxX);
-	box(stdscr, 0, 0);
-	mvwprintw(stdscr,0, 2, opt3.c_str());
-	/* frame with option name */
-
-	/* queries window */
-	int queriesHeight = 3; int queriesWidth = 60;
-	int queriesPosY = maxY/4-queriesHeight/2; int queriesPosX = maxX/2-queriesWidth/2;
-	WINDOW * queries = newwin(queriesHeight, queriesWidth, queriesPosY, queriesPosX);
-	refresh();
-	/* queries window */
-
-	/* reply window */
-	int replyHeight, replyWidth, replyY, replyX;
-	replyHeight = 3;
-	replyWidth = 60;
-	replyY = 2*maxY/4-replyHeight/2;
-	replyX = maxX/2-replyWidth/2;
-
-	WINDOW * reply = newwin(replyHeight, replyWidth, replyY, replyX);
-	refresh();
-	/* reply window */
-
-	/* user input */
-	int uInputHeight = 2; int uInputWidth = 30;
-	int uInputPosY = 3*maxY/4-uInputHeight/2; int uInputPosX = (maxX-uInputWidth)/2;
-	WINDOW * uInput = newwin(uInputHeight, uInputWidth, uInputPosY, uInputPosX);
-	refresh();
-	mkInputBox(uInput);
-	/* user input */
-
-	VocInfo Vocs = getVocs(dict);
-	init_pair(1, COLOR_BLUE, COLOR_BLACK);
-	char uTrans[] = " ";
-
-	/* randomly choose to query either ja->en or en->ja */
-	for (int i=0;i<Vocs.vocNum-1;++i) {
-		string en = Vocs.en[i];
-		string ja = Vocs.ja[i];
-		string hira = Vocs.hira[i];
-		int rndm = rand() % 2;
-		if (rndm == 0) {
-			/* print query */
-			wattron(queries,COLOR_PAIR(1));
-			mvwprintw(queries, 0, queriesWidth/2-ja.length()/3, ja.c_str()); // divided by 6 because one ja char has a length of 3
-			wattroff(queries,COLOR_PAIR(1));
-			wrefresh(queries);
-			/* print query */
-
-			/* get user input */
-			mvwgetnstr(uInput, 0, 1, uTrans,60);
-	
-			wclear(reply);
-			if (isSubSet(uTrans, en)) {
-				mvwprintw(reply, 0, 0, "%s","correct");
-			}
-			else {
-				mvwprintw(reply, 0, 0, "false");
-				mvwprintw(reply, 1, 0, "answer:");
-				wattron(reply, COLOR_PAIR(1));
-				(hira.empty()) ? wprintw(reply, ja.c_str()) : wprintw(reply, "%s [%s]",ja.c_str(),hira.c_str()); 
-				wattroff(reply, COLOR_PAIR(1));
-				wprintw(reply, " -> %s",en.c_str()); 
-			}
-			wrefresh(reply);
-			/* get user input */
-		}
-		else {
-			/* print query */
-			wattron(queries,COLOR_PAIR(1));
-			mvwprintw(queries, 0, queriesWidth/2-en.length()/2, en.c_str());
-			wattroff(queries,COLOR_PAIR(1));
-			wrefresh(queries);
-			/* print query */
-
-			/* get user input */
-			mvwgetnstr(uInput, 0, 1, uTrans,60);
-	
-			wclear(reply);
-			if (isSubSet(uTrans, ja)) mvwprintw(reply, 0, 0, "%s","correct");
-			else if (isSubSet(uTrans, hira)) {
-				wclear(reply);
-				mvwprintw(reply, 0, 0, "%s","correct, kanji notation: ");
-				wattron(reply,COLOR_PAIR(1));
-				wprintw(reply, ja.c_str());
-				wattroff(reply,COLOR_PAIR(1));
-				wrefresh(reply);
-			}
-			else {
-				mvwprintw(reply, 0, 0, "false");
-				mvwprintw(reply, 1, 0, "answer:");
-				wattron(reply, COLOR_PAIR(1));
-				wprintw(reply, en.c_str());
-				wattroff(reply, COLOR_PAIR(1));
-				(hira.empty()) ? wprintw(reply, " -> %s",ja.c_str()) : wprintw(reply, " -> %s [%s]",ja.c_str(),hira.c_str()); 
-			}
-			wrefresh(reply);
-			/* get user input */
-		}
-	wclear(queries);
-	wmove(uInput, 0, 0); wclrtoeol(uInput);
-	refresh();
-	}
+	 
 }
 
 char mkOptsWin(string query1, string query2, string query3, string exit, int optsHeight){
@@ -429,63 +314,57 @@ char mkOptsWin(string query1, string query2, string query3, string exit, int opt
 	mkInputBox(uinput);
 	
 	char uin;
-	mvwgetnstr(uinput, 0, 0, &uin, 1);
-/*	while ( (uin != '1') && (uin != '2') && (uin != '3') && (uin != '4') ) {
-		wmove(uinput, 0, 0);
-		wclrtoeol(uinput);
-		uin = mvwgetnstr(uinput, 0, 0, &uin, 1);
-	}
-	*/
+	mvwgetnstr(uinput, 0, 1, &uin, 1);
 	return uin;
 	/* user input field */
 }
 
 void mkStartWin(string name, string subtitle) {
 	/* header */
-		noecho(); curs_set(false);
-		int horPadding = 8;
-		int titleHeight = 5; int titleWidth = name.length()+horPadding;
-		int maxY, maxX; getmaxyx(stdscr, maxY, maxX);
-		int titlePosY = maxY/2-titleHeight/2; int titlePosX = maxX/2-titleWidth/2;
-		int curPosY = 0;
+	noecho(); curs_set(false);
+	int horPadding = 8;
+	int titleHeight = 5; int titleWidth = name.length()+horPadding;
+	int maxY, maxX; getmaxyx(stdscr, maxY, maxX);
+	int titlePosY = 2*maxY/5-titleHeight/2; int titlePosX = maxX/2-titleWidth/2;
+	int curPosY = 0;
 
-		while (curPosY <= titlePosY) {
-			clear();
-			WINDOW * title = newwin(titleHeight, titleWidth, curPosY, titlePosX);
-			++curPosY;
+	while (curPosY <= titlePosY) {
+		clear();
+		WINDOW * title = newwin(titleHeight, titleWidth, curPosY, titlePosX);
+		++curPosY;
 
-			/* box */
-			refresh();
-			box(title, 0,0);
-			wrefresh(title);
-			/* box */
+		/* box */
+		refresh();
+		box(title, 0,0);
+		wrefresh(title);
+		/* box */
 
-			/* box text */
-			init_pair(1, COLOR_RED, COLOR_BLACK);
-			wattron(title,COLOR_PAIR(1)); wattron(title, A_BOLD);
-			mvwprintw(title, titleHeight/2, horPadding/2, name.c_str());
-			wattroff(title, A_BOLD); wattroff(title,COLOR_PAIR(1));
-			wrefresh(title);
-			/* box text */
+		/* box text */
+		init_pair(1, COLOR_RED, COLOR_BLACK);
+		wattron(title,COLOR_PAIR(1)); wattron(title, A_BOLD);
+		mvwprintw(title, titleHeight/2, horPadding/2, name.c_str());
+		wattroff(title, A_BOLD); wattroff(title,COLOR_PAIR(1));
+		wrefresh(title);
+		/* box text */
 
-			usleep(3E4);
-		}
+		usleep(3E4);
+	}
 	/* header */
 
 	/* sub header */
-		int lenEnter = subtitle.length();
-		attron(A_BLINK);
-		mvprintw(titlePosY+titleHeight, maxX/2-(lenEnter+8)/2, subtitle.c_str());
+	int lenEnter = subtitle.length();
+	attron(A_BLINK);
+	mvprintw(titlePosY+titleHeight, maxX/2-(lenEnter+8)/2, subtitle.c_str());
 
-		printw(" ("); 
-		init_pair(2, COLOR_YELLOW, COLOR_BLACK); attron(COLOR_PAIR(2));
-		printw("Enter");
-		attroff(COLOR_PAIR(2));
-		printw(")");
-		attroff(A_BLINK);
+	printw(" ("); 
+	init_pair(2, COLOR_YELLOW, COLOR_BLACK); attron(COLOR_PAIR(2));
+	printw("Enter");
+	attroff(COLOR_PAIR(2));
+	printw(")");
+	attroff(A_BLINK);
 
-		int uChar = getch();
-		while (uChar != 13) uChar = getch();
+	int uChar = getch();
+	while (uChar != 13) uChar = getch();
 	/* sub header */
 }
 
@@ -500,10 +379,6 @@ int main(int argc, char** argv) {
 
 	setlocale(LC_ALL, "");
 	curs_set(false); initscr(); cbreak(); noecho(); nonl(); intrflush(stdscr, false); keypad(stdscr, true);
-	/*
-	 * also use getnch() to limit number of inputs, thus you can get rid of loops
-	keypad(stdscr, true);
-	keyok(KEY_BACKSPACE, true);*/
 
 	if (!has_colors()) throw "TERMINAL DOES NOT SUPPORT COLORS.";
 	try {
@@ -511,9 +386,9 @@ int main(int argc, char** argv) {
 			mkStartWin("Cursary: Your Friendly Neighborhood Voc Trainer", "Insert Coin");
 		while (true) {
 			char uOption = mkOptsWin(opt1,opt2,opt3,opt4,11);
-			if (uOption == '1') mkOpt1Win(dict);
-			else if (uOption == '2') mkOpt2Win(dict);
-			else if (uOption == '3') mkOpt3Win(dict);
+			if (uOption == '1') queryVocs(dict,1);
+			else if (uOption == '2') queryVocs(dict,2);
+			else if (uOption == '3') queryVocs(dict,3);
 			else if (uOption == '4') break;
 			else continue;
 		}
