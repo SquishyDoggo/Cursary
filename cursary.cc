@@ -112,7 +112,7 @@ int mkOpt1Win(WINDOW * queries, WINDOW * reply, WINDOW * uInput, VocInfo Vocs, i
 	curs_set(true); cbreak(); echo(); nonl(); intrflush(stdscr, false); keypad(stdscr, true);
 	refresh();
 
-	init_pair(1, COLOR_BLUE, COLOR_BLACK);
+	init_pair(1, COLOR_RED, COLOR_BLACK);
 	int queriesWidth = 60;
 	int maxInputLen = 25;
 	char uTrans[maxInputLen];
@@ -132,7 +132,8 @@ int mkOpt1Win(WINDOW * queries, WINDOW * reply, WINDOW * uInput, VocInfo Vocs, i
 	
 	if (isSubSet(uTrans, en)) {
 		wclear(reply);
-		mvwprintw(reply, 0, 0, "%s","correct");
+		string answer = "correct";
+		mvwprintw(reply, 0, 30-answer.length()/2, "%s",answer.c_str());
 		wrefresh(reply);
 	}
 	else {
@@ -157,7 +158,7 @@ int mkOpt2Win(WINDOW * queries, WINDOW * reply, WINDOW * uInput, VocInfo Vocs, i
 	curs_set(true); cbreak(); echo(); nonl(); intrflush(stdscr, false); keypad(stdscr, true);
 	refresh();
 
-	init_pair(1, COLOR_BLUE, COLOR_BLACK);
+	init_pair(1, COLOR_RED, COLOR_BLACK);
 	int queriesWidth = 60;
 	int maxInputLen = 25;
 	char uTrans[maxInputLen];
@@ -230,7 +231,10 @@ void queryVocs(string dict,int uOption) {
 
 	/* frame with option name */
 	int maxY, maxX; getmaxyx(stdscr, maxY, maxX);
+	init_pair(8, COLOR_YELLOW, 0);
+	attron(COLOR_PAIR(8));
 	box(stdscr, 0, 0);
+	attroff(COLOR_PAIR(8));
 	/* frame with option name */
 
 	/* queries window */
@@ -259,23 +263,30 @@ void queryVocs(string dict,int uOption) {
 	/* user input */
 
 	VocInfo Vocs = getVocs(dict);
+	init_pair(9, COLOR_YELLOW, COLOR_BLACK);
 
 	if (uOption == 0) {
+		wattron(stdscr, COLOR_PAIR(9));
 		mvwprintw(stdscr,0, 2, opt1.c_str());
+		wattroff(stdscr, COLOR_PAIR(9));
 		for (int i=0; i<Vocs.vocNum-1; ++i) {
 			int status = mkOpt1Win(queries,reply,uInput,Vocs,i);
 			if (status == -1) break;
 		} 
 	}
 	if (uOption == 1) {
+		wattron(stdscr, COLOR_PAIR(9));
 		mvwprintw(stdscr,0, 2, opt2.c_str());
+		wattroff(stdscr, COLOR_PAIR(9));
 		for (int i=0; i<Vocs.vocNum-1; ++i) {
 			int status = mkOpt2Win(queries,reply,uInput,Vocs,i);
 			if (status == -1) break;
 		}
 	}
 	if (uOption == 2) {
+		wattron(stdscr, COLOR_PAIR(9));
 		mvwprintw(stdscr,0, 2, opt3.c_str());
+		wattroff(stdscr, COLOR_PAIR(9));
 		srand(time(NULL)); // init random seed based on sys time
 		for (int i=0; i<Vocs.vocNum-1; ++i) {
 			int status = mkOpt3Win(queries,reply,uInput,Vocs,i);
@@ -287,11 +298,12 @@ void queryVocs(string dict,int uOption) {
 int selectionMenu(WINDOW * opts, string choices[], int fields) {
 	keypad(opts, true);
 	int selected = 0;
+	init_pair(1, COLOR_RED, 0);
 	while (true) {
 		for (int i=0;i<fields;++i) {
-			if (selected == i) wattron(opts, A_REVERSE);
+			if (selected == i) wattron(opts, COLOR_PAIR(1));
 			mvwprintw(opts, (opts->_maxy+1)/5+2*i, 1, choices[i].c_str());
-			wattroff(opts, A_REVERSE);
+			wattroff(opts, COLOR_PAIR(1));
 		}	
 		int uDir = wgetch(opts);
 
@@ -319,9 +331,12 @@ int mkOptsWin(string query1, string query2, string query3, string exit, int opts
 	refresh();
 
 	/* box with name */
+//	init_pair(2, COLOR_RED, 0);
+	wattron(opts, COLOR_PAIR(2));
 	box(opts, 0, 0);
 	string tag = "Options";
 	mvwprintw(opts, 0, optsWidth/2-tag.length()/2-1, tag.c_str());
+	wattroff(opts, COLOR_PAIR(2));
 	/* box with name */
 	wrefresh(opts);
 
