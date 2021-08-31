@@ -1,7 +1,7 @@
-#📔Cursary
+# 📔Cursary
 Your friendly neighborhood ncurses vocabulary trainer for english and japanese.
 
-##💻Installation
+## 💻Installation
 Clone the repository and run `make` inside the project directory.
 
 ## Usage ##
@@ -14,7 +14,7 @@ In the options menu the user is presented 3 query types:
 ## Showcase ##
 ![Cursary](demo/cursary.gif)
 
-##📁 Dictionary File
+## 📁 Dictionary File
 Vocabulary inside the dictionary file is stored in 3-tuples and follows a preset structure.\
 The first line contains the english word. If multiple english words point to the same japanese word they may be separated by semicolons.\
 The japanese counterpart is stored in the line below. If it features kanji-characters, then the third line contains furigana.
