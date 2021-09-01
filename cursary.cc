@@ -38,6 +38,8 @@ const string opt2 = "English ->  Japanese";
 const string opt3 = "Japanese <-> English";
 const string opt4 = "Exit";
 
+int corUTrans = 0; // number of correct user translations
+
 /**
  * Saves all vocs and their amount inside a struct
  *
@@ -127,7 +129,7 @@ void mkInputBox(WINDOW * winName) {
  * @param idx Index of the vocabulary to be queried
  * @return Number which is -1 if ctrl(o) is pressed (go back to main menu) and 0 else
  */
-int mkOpt1Win(WINDOW * queries, WINDOW * reply, WINDOW * uInput, VocInfo Vocs, int idx) {
+int queryJaToEn(WINDOW * queries, WINDOW * reply, WINDOW * uInput, WINDOW * userStats, VocInfo Vocs, int idx) {
 	curs_set(true); cbreak(); echo(); nonl(); intrflush(stdscr, false); keypad(stdscr, true);
 	refresh();
 
@@ -137,6 +139,8 @@ int mkOpt1Win(WINDOW * queries, WINDOW * reply, WINDOW * uInput, VocInfo Vocs, i
 	/* colors */
 
 	int queriesWidth = 60;
+	int userStatsHeight = 6;
+	int userStatsWidth = 20;
 	int maxInputLen = 25;
 	char uTrans[maxInputLen];
 
@@ -150,11 +154,33 @@ int mkOpt1Win(WINDOW * queries, WINDOW * reply, WINDOW * uInput, VocInfo Vocs, i
 	wrefresh(queries);
 	/* print query */
 
+	/* fill stats window */
+	/* box */
+	wclear(userStats);
+	wclear(userStats);
+	wattron(userStats, COLOR_PAIR(4));
+	box(userStats, 0, 0);
+	wattroff(userStats, COLOR_PAIR(4));
+	/* box */
+	/* header */
+	mvwprintw(userStats, 0, 2, "Statistics");
+	/* header */
+	wattron(userStats, COLOR_PAIR(2));
+	mvwprintw(userStats, userStatsHeight/2, userStatsWidth/2-1, "%d",corUTrans);
+	wattroff(userStats, COLOR_PAIR(2));
+	wprintw(userStats, "/");
+	wprintw(userStats, "%d",idx);
+	string userStatsMessage = "Total: ";
+	mvwprintw(userStats, userStatsHeight-1, 1, "%s%d",userStatsMessage.c_str(),Vocs.vocNum);
+	wrefresh(userStats);
+	/* fill stats window */
+
 	/* get user input */
 	mvwgetnstr(uInput, 0, 1, uTrans,maxInputLen);
 	wclear(reply);
 
 	if (isSubSet(uTrans, en)) {
+		++corUTrans;
 		wattron(reply, COLOR_PAIR(2));
 		box(reply, 0, 0);
 		wattroff(reply, COLOR_PAIR(2));
@@ -172,9 +198,28 @@ int mkOpt1Win(WINDOW * queries, WINDOW * reply, WINDOW * uInput, VocInfo Vocs, i
 
 	wrefresh(reply);
 	wclear(queries);
-	wmove(uInput, 0, 0); wclrtoeol(uInput);
 	refresh();
+	wmove(uInput, 0, 0); wclrtoeol(uInput);
 	if (*uTrans == ctrl('o')) return -1;
+
+	/* fill stats window */
+	/* box */
+	wattron(userStats, COLOR_PAIR(4));
+	box(userStats, 0, 0);
+	wattroff(userStats, COLOR_PAIR(4));
+	/* box */
+	/* header */
+	mvwprintw(userStats, 0, 2, "Statistics");
+	/* header */
+	wattron(userStats, COLOR_PAIR(2));
+	mvwprintw(userStats, userStatsHeight/2, userStatsWidth/2-1, "%d",corUTrans);
+	wattroff(userStats, COLOR_PAIR(2));
+	wprintw(userStats, "/");
+	wprintw(userStats, "%d",idx+1);
+	mvwprintw(userStats, userStatsHeight-1, 1, "%s%d",userStatsMessage.c_str(),Vocs.vocNum);
+	wrefresh(userStats);
+	/* fill stats window */
+
 	return 0;
 	/* get user input */
 }
@@ -189,7 +234,7 @@ int mkOpt1Win(WINDOW * queries, WINDOW * reply, WINDOW * uInput, VocInfo Vocs, i
  * @param idx Index of the vocabulary to be queried
  * @return Number which is -1 if ctrl(o) is pressed (go back to main menu) and 0 else
  */
-int mkOpt2Win(WINDOW * queries, WINDOW * reply, WINDOW * uInput, VocInfo Vocs, int idx) {
+int queryEnToJa(WINDOW * queries, WINDOW * reply, WINDOW * uInput, WINDOW * userStats, VocInfo Vocs, int idx) {
 	curs_set(true); cbreak(); echo(); nonl(); intrflush(stdscr, false); keypad(stdscr, true);
 	refresh();
 	
@@ -199,6 +244,8 @@ int mkOpt2Win(WINDOW * queries, WINDOW * reply, WINDOW * uInput, VocInfo Vocs, i
 	/* colors */
 
 	int queriesWidth = 60;
+	int userStatsHeight = 6;
+	int userStatsWidth = 20;
 	int maxInputLen = 25;
 	char uTrans[maxInputLen];
 
@@ -229,11 +276,31 @@ int mkOpt2Win(WINDOW * queries, WINDOW * reply, WINDOW * uInput, VocInfo Vocs, i
 	}
 	std::cout << uTrans;
 */
+
+	/* fill stats window */
+	/* box */
+	wattron(userStats, COLOR_PAIR(4));
+	box(userStats, 0, 0);
+	wattroff(userStats, COLOR_PAIR(4));
+	/* box */
+	/* header */
+	mvwprintw(userStats, 0, 2, "Statistics");
+	/* header */
+	wattron(userStats, COLOR_PAIR(2));
+	mvwprintw(userStats, userStatsHeight/2, userStatsWidth/2-1, "%d", corUTrans);
+	wattroff(userStats, COLOR_PAIR(2));
+	wprintw(userStats, "/");
+	wprintw(userStats, "%d",idx);
+	string userStatsMessage = "Total: ";
+	mvwprintw(userStats, userStatsHeight-1, 1, "%s%d",userStatsMessage.c_str(),Vocs.vocNum);
+	wrefresh(userStats);
+	/* fill stats window */
 		
 	mvwgetnstr(uInput, 0, 1, uTrans,maxInputLen);
 	wclear(reply);
 
 	if (isSubSet(uTrans, ja)) {
+		++corUTrans;
 		string answer0 = "correct";
 		wattron(reply, COLOR_PAIR(2));
 		box(reply, 0, 0);
@@ -241,6 +308,7 @@ int mkOpt2Win(WINDOW * queries, WINDOW * reply, WINDOW * uInput, VocInfo Vocs, i
 		mvwprintw(reply, 1, queriesWidth/2-answer0.length()/2, answer0.c_str());
 	}
 	else if (isSubSet(uTrans, furi)) {
+		++corUTrans;
 		string kanjiExis = "kanji notation: ";
 		wattron(reply, COLOR_PAIR(2));
 		box(reply, 0, 0);
@@ -260,9 +328,28 @@ int mkOpt2Win(WINDOW * queries, WINDOW * reply, WINDOW * uInput, VocInfo Vocs, i
 
 	wrefresh(reply);
 	wclear(queries);
-	wmove(uInput, 0, 0); wclrtoeol(uInput);
 	refresh();
+	wmove(uInput, 0, 0); wclrtoeol(uInput);
 	if (*uTrans == ctrl('o')) return -1;
+
+	/* fill stats window */
+	/* box */
+	wattron(userStats, COLOR_PAIR(4));
+	box(userStats, 0, 0);
+	wattroff(userStats, COLOR_PAIR(4));
+	/* box */
+	/* header */
+	mvwprintw(userStats, 0, 2, "Statistics");
+	/* header */
+	wattron(userStats, COLOR_PAIR(2));
+	mvwprintw(userStats, userStatsHeight/2, userStatsWidth/2-1, "%d", corUTrans);
+	wattroff(userStats, COLOR_PAIR(2));
+	wprintw(userStats, "/");
+	wprintw(userStats, "%d",idx+1);
+	mvwprintw(userStats, userStatsHeight-1, 1, "%s%d",userStatsMessage.c_str(),Vocs.vocNum);
+	wrefresh(userStats);
+	/* fill stats window */
+		
 	return 0;
 	/* get user input */
 }
@@ -277,15 +364,15 @@ int mkOpt2Win(WINDOW * queries, WINDOW * reply, WINDOW * uInput, VocInfo Vocs, i
  * @param idx Index of the vocabulary to be queried
  * @return Number which is -1 if ctrl(o) is pressed (go back to main menu) and 0 else
  */
-int mkOpt3Win(WINDOW * queries, WINDOW * reply, WINDOW * uInput, VocInfo Vocs, int idx) {
+int queryMixed(WINDOW * queries, WINDOW * reply, WINDOW * uInput, WINDOW * userStats, VocInfo Vocs, int idx) {
 	curs_set(true); cbreak(); echo(); nonl(); intrflush(stdscr, false); keypad(stdscr, true);
 	refresh();
 
 	/* randomly choose to query either ja->en or en->ja */
 	int rndm = rand() % 2;
 	int status;
-	if (rndm == 0) status = mkOpt1Win(queries,reply,uInput,Vocs,idx);
-	else status = mkOpt2Win(queries,reply,uInput,Vocs,idx);
+	if (rndm == 0) status = queryJaToEn(queries, reply, uInput, userStats, Vocs, idx);
+	else status = queryEnToJa(queries, reply, uInput, userStats, Vocs, idx);
 	/* randomly choose to query either ja->en or en->ja */
 
 	wclear(queries);
@@ -300,21 +387,29 @@ int mkOpt3Win(WINDOW * queries, WINDOW * reply, WINDOW * uInput, VocInfo Vocs, i
  * @param dict Name of the dictionary file
  * @param uOption Query option selected by user (english to japanese, japanese to english or mixed)
  */
-void queryVocs(string dict,int uOption) {
-	curs_set(true); cbreak(); echo(); nonl(); intrflush(stdscr, false); keypad(stdscr, true);
+void queryAll(string dict,int uOption) {
+	cbreak(); echo(); nonl(); intrflush(stdscr, false); keypad(stdscr, true);
 	clear();
 
-	/* frame with option name */
+	/* colors */
+	init_pair(3, COLOR_YELLOW, COLOR_BLACK);
+	init_pair(4, COLOR_BLUE, COLOR_BLACK);
+	/* colors */
+
 	int maxY, maxX; getmaxyx(stdscr, maxY, maxX);
-	init_pair(8, COLOR_YELLOW, 0);
-	attron(COLOR_PAIR(8));
+
+	/* frame with option name */
+	attron(COLOR_PAIR(3));
 	box(stdscr, 0, 0);
-	attroff(COLOR_PAIR(8));
+	attroff(COLOR_PAIR(3));
 	/* frame with option name */
 
 	/* queries window */
-	int queriesHeight = 3; int queriesWidth = 60;
-	int queriesPosY = maxY/4-queriesHeight/2; int queriesPosX = maxX/2-queriesWidth/2;
+	int queriesHeight, queriesWidth, queriesPosY, queriesPosX;
+	queriesHeight = 3;
+	queriesWidth = 60;
+	queriesPosY = maxY/4-queriesHeight/2;
+	queriesPosX = maxX/2-queriesWidth/2;
 	WINDOW * queries = newwin(queriesHeight, queriesWidth, queriesPosY, queriesPosX);
 	refresh();
 	/* queries window */
@@ -329,6 +424,17 @@ void queryVocs(string dict,int uOption) {
 	refresh();
 	/* reply window */
 
+	/* user statistics window */
+	int userStatsHeight, userStatsWidth, userStatsY, userStatsX;
+	userStatsY = maxY/16;
+	userStatsX = 6*maxX/7;
+	userStatsHeight = 7;
+	userStatsWidth = 20;
+	WINDOW * userStats = newwin(userStatsHeight, userStatsWidth, userStatsY, userStatsX);
+	refresh();
+	/* user statistics window */
+	
+
 	/* user input */
 	int uInputHeight = 2; int uInputWidth = 30;
 	int uInputPosY = 3*maxY/4-uInputHeight/2; int uInputPosX = (maxX-uInputWidth)/2;
@@ -338,36 +444,43 @@ void queryVocs(string dict,int uOption) {
 	/* user input */
 
 	VocInfo Vocs = getVocs(dict);
-	init_pair(9, COLOR_YELLOW, COLOR_BLACK);
 
 	if (uOption == 0) {
-		wattron(stdscr, COLOR_PAIR(9));
+		wattron(stdscr, COLOR_PAIR(3));
 		mvwprintw(stdscr,0, 2, opt1.c_str());
-		wattroff(stdscr, COLOR_PAIR(9));
-		for (int i=0; i<Vocs.vocNum-1; ++i) {
-			int status = mkOpt1Win(queries,reply,uInput,Vocs,i);
+		wattroff(stdscr, COLOR_PAIR(3));
+		for (int i=0; i<Vocs.vocNum; ++i) {
+			int status = queryJaToEn(queries, reply, uInput, userStats, Vocs, i);
 			if (status == -1) break;
 		} 
 	}
 	if (uOption == 1) {
-		wattron(stdscr, COLOR_PAIR(9));
+		wattron(stdscr, COLOR_PAIR(3));
 		mvwprintw(stdscr,0, 2, opt2.c_str());
-		wattroff(stdscr, COLOR_PAIR(9));
-		for (int i=0; i<Vocs.vocNum-1; ++i) {
-			int status = mkOpt2Win(queries,reply,uInput,Vocs,i);
+		wattroff(stdscr, COLOR_PAIR(3));
+		for (int i=0; i<Vocs.vocNum; ++i) {
+			int status = queryEnToJa(queries, reply, uInput, userStats, Vocs, i);
 			if (status == -1) break;
 		}
 	}
 	if (uOption == 2) {
-		wattron(stdscr, COLOR_PAIR(9));
+		wattron(stdscr, COLOR_PAIR(3));
 		mvwprintw(stdscr,0, 2, opt3.c_str());
-		wattroff(stdscr, COLOR_PAIR(9));
+		wattroff(stdscr, COLOR_PAIR(3));
 		srand(time(NULL)); // init random seed based on sys time
-		for (int i=0; i<Vocs.vocNum-1; ++i) {
-			int status = mkOpt3Win(queries,reply,uInput,Vocs,i);
+		for (int i=0; i<Vocs.vocNum; ++i) {
+			int status = queryMixed(queries, reply, uInput, userStats, Vocs, i);
 			if (status == -1) break;
 		}
 	}
+
+	corUTrans = 0;
+	/* so that user has time to look at stats */
+	curs_set(false);
+	wclear(queries); wclear(reply); wclear(uInput); wrefresh(queries); wrefresh(reply); wrefresh(uInput);
+	refresh();
+	getch();
+	/* so that user has time to look at stats */
 }
 
 /**
@@ -379,8 +492,11 @@ void queryVocs(string dict,int uOption) {
  */
 int selectionMenu(WINDOW * opts, string choices[], int fields) {
 	keypad(opts, true);
+	/* colors */
+	init_pair(1, COLOR_RED, COLOR_BLACK);
+	/* colors */
+
 	int selected = 0;
-	init_pair(1, COLOR_RED, 0);
 	while (true) {
 		for (int i=0;i<fields;++i) {
 			if (selected == i) wattron(opts, COLOR_PAIR(1));
@@ -417,17 +533,21 @@ int mkOptsWin(string query1, string query2, string query3, string exit, int opts
 	curs_set(false); cbreak(); noecho(); nonl(); intrflush(stdscr, false); keypad(stdscr, true);
 	clear();
 
+	/* colors */
+	init_pair(3, COLOR_YELLOW, COLOR_BLACK);
+	/* colors */
+
 	int maxY, maxX; getmaxyx(stdscr, maxY, maxX);
 	int optsWidth = query3.length()+7;
 	WINDOW* opts = newwin(optsHeight, optsWidth, maxY/2-optsHeight, maxX/2-optsWidth/2);
 	refresh();
 
 	/* box with name */
-	wattron(opts, COLOR_PAIR(2));
+	wattron(opts, COLOR_PAIR(3));
 	box(opts, 0, 0);
 	string tag = "Options";
 	mvwprintw(opts, 0, optsWidth/2-tag.length()/2-1, tag.c_str());
-	wattroff(opts, COLOR_PAIR(2));
+	wattroff(opts, COLOR_PAIR(3));
 	/* box with name */
 	wrefresh(opts);
 
@@ -442,6 +562,12 @@ int mkOptsWin(string query1, string query2, string query3, string exit, int opts
  * @param subtitle A subtitle 
  */
 void mkStartWin(string name, string subtitle) {
+
+	/* colors */
+	init_pair(1, COLOR_RED, COLOR_BLACK);
+	init_pair(3, COLOR_YELLOW, COLOR_BLACK);
+	/* colors */
+
 	/* header */
 	noecho(); curs_set(false);
 	int horPadding = 8;
@@ -454,22 +580,23 @@ void mkStartWin(string name, string subtitle) {
 		clear();
 		WINDOW * title = newwin(titleHeight, titleWidth, curPosY, titlePosX);
 		++curPosY;
+		refresh();
 		
 		/* box */
-		refresh();
+		wattron(title, COLOR_PAIR(3));
 		box(title, 0,0);
+		wattroff(title, COLOR_PAIR(3));
 		wrefresh(title);
 		/* box */
 
 		/* box text */
-		init_pair(1, COLOR_RED, COLOR_BLACK);
 		wattron(title,COLOR_PAIR(1)); wattron(title, A_BOLD);
 		mvwprintw(title, titleHeight/2, horPadding/2, name.c_str());
 		wattroff(title, A_BOLD); wattroff(title,COLOR_PAIR(1));
 		wrefresh(title);
 		/* box text */
 
-		usleep(3E4);
+		usleep(2E4);
 	}
 	/* header */
 
@@ -479,9 +606,9 @@ void mkStartWin(string name, string subtitle) {
 	mvprintw(titlePosY+titleHeight, maxX/2-(lenEnter+8)/2, subtitle.c_str());
 
 	printw(" ("); 
-	init_pair(2, COLOR_YELLOW, COLOR_BLACK); attron(COLOR_PAIR(2));
+	attron(COLOR_PAIR(3));
 	printw("Enter");
-	attroff(COLOR_PAIR(2));
+	attroff(COLOR_PAIR(3));
 	printw(")");
 	attroff(A_BLINK);
 
@@ -509,7 +636,7 @@ int main(int argc, char** argv) {
 		while (true) {
 			char uOption = mkOptsWin(opt1,opt2,opt3,opt4,11);
 			if (uOption == 3) break;
-			else if ( (uOption==0)||(uOption==1)||(uOption==2) ) queryVocs(dict,uOption);
+			else if ( (uOption==0)||(uOption==1)||(uOption==2) ) queryAll(dict,uOption);
 			else continue;
 		}
 
