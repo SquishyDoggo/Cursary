@@ -5,19 +5,19 @@ Your friendly neighborhood ncurses vocabulary trainer for :us: and :jp:
 Clone the repository and run `make` inside the project directory.
 
 ## :ear: Explanation
-__Cursary's__ interface is quickly understood. On startup :superhero_man: has the option to choose a query type.
+__Cursary's__ interface is quickly understood. On startup :curly_haired_man: has the option to choose a query type.
 Currently there are three:
 He can navigate between them by using either the :arrow_up_down: keys or vim-type bindings.
-After choosing a preferred option :superhero_man:'ll be greeted with the query screen:
+After choosing a preferred option :curly_haired_man:'ll be greeted with the query screen:
 ![options_menu](demo/components.jpg "Components")
 
 The _query type_ field in the upper left corner displays the selected option. The _query_ field in the middle displays the current word which is to be translated.
-Below is the _reply_ field that informs :superhero_man: if the input was correct or not. In this case the input was :x: so the vocabulary with its proper
+Below is the _reply_ field that informs :curly_haired_man: if the input was correct or not. In this case the input was :x: so the vocabulary with its proper
 translation is shown.
 Located on the bottom is the _input_ field where user input is received.\
-__Cursary__ keeps track of how many words :superhero_man: has been queried, how many of them he knew and their total amount.
-These informations are displayed in the _statistics_ field. Here 27 of a total 71 words have been queried so far and :superhero_man: translated 6 of them correctly .\
-:superhero_man: can always go back to the options screen by hitting ^C + o followed by enter.
+__Cursary__ keeps track of how many words :curly_haired_man: has been queried, how many of them he knew and their total amount.
+These informations are displayed in the _statistics_ field. Here 27 of a total 71 words have been queried so far and :curly_haired_man: translated 6 of them correctly .\
+:curly_haired_man: can always go back to the options screen by hitting ^C + o followed by enter.
 
 ## :eyes: Showcase
 ![Cursary](demo/cursary.gif)
