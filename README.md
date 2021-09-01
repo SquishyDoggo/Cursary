@@ -23,7 +23,6 @@ These informations are displayed in the _statistics_ field. Here 27 of a total 7
 
 ## :file_folder: Dictionary File
 __Cursary__ scans _dicts/enja.txt_ for vocabulary, where words may be added in accordance with the notation :point_down:\
-\
 Vocabulary inside the dictionary file is stored in 3-tuples and follows a preset structure.
 The first line contains the :us: word. If multiple :us: words point to the same :jp: word they may be separated by semicolons.\
 The :jp: counterpart is stored in the line below. If it features kanji-characters, then the third line contains furigana.
