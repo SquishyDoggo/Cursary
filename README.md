@@ -7,11 +7,13 @@ Clone the repository and run `make` inside the project directory.
 ## :ear: Explanation
 __Cursary's__ interface is quickly understood. On startup :bearded_person: has the option to choose a query type.
 Currently there are three:\
-<img src="demo/options_menu.jpg" height="350">\
+
 ![options_menu](demo/options_menu.jpg "Options menu")\
+
 :bearded_person: can navigate between them by using either the :arrow_up_down: keys or vim-type bindings.
-After choosing his preferred option, :bearded_person:'ll be greeted with the query screen:
-<img src="demo/components.jpg" height="350">\
+After choosing a preferred option :bearded_person:'ll be greeted with the query screen:
+![options_menu](demo/components.jpg "Components")\
+
 The _query type_ field in the upper left corner displays the selected option. The _query_ field in the middle displays the current word which is to be translated.
 Below is the _reply_ field that informs :bearded_person: if the input was correct or not. In this case the input was :x: so the vocabulary with its proper
 translation is shown.
