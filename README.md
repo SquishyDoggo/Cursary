@@ -7,6 +7,7 @@ Clone the repository and run `make` inside the project directory.
 ## :ear: Explanation
 __Cursary's__ interface is quickly understood. On startup :bearded_person: has the option to choose a query type.
 Currently there are three:\
+<img src="demo/options_menu.jpg" width="48">\
 ![options_menu](demo/options_menu.jpg "Options menu")\
 :bearded_person: can navigate between them by using either the :arrow_up_down: keys or vim-type bindings.
 After choosing his preferred option, :bearded_person:'ll be greeted with the query screen:
