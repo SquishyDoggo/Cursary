@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <bits/types/wint_t.h>
 #include <cstddef>
 #include <cstdio>
 #include <linux/limits.h>
@@ -24,6 +25,7 @@ using std::fstream;
 using std::cerr;
 using std::endl;
 
+/* Stores all vocabulary and their amount */
 struct VocInfo {
 	int vocNum;
 	vector<string> en;
@@ -32,14 +34,15 @@ struct VocInfo {
 };
 
 const string opt1 = "Japanese -> English";
-const string opt2 = "Japanese <-  English";
+const string opt2 = "English ->  Japanese";
 const string opt3 = "Japanese <-> English";
 const string opt4 = "Exit";
 
-/*
- *task: 	save all vocs and their amount inside a struct
- * arguments: 	dict: 		name of the dictionary file where all vocs are stored
- * return 	struct containing all vocs and how many there are	
+/**
+ * Saves all vocs and their amount inside a struct
+ *
+ * @param dict Name of the dictionary file where all vocs are stored
+ * @return Struct containing all vocs and how many there are	
  */
 VocInfo getVocs(string dict) {
 	fstream dictFile (dict, ios::in);
@@ -61,10 +64,11 @@ VocInfo getVocs(string dict) {
 	return Vocs;
 } 
 
-/*
- * task: 	put each translation into a single element of a vector
- * arguments: 	trans: 		string with at least one translation
- * return 	vector containing all translations as single elements
+/**
+ * Puts each translation of one word into a single element of a vector
+ *
+ * @param trans	String containing the translation
+ * @return Vector containing all translations as single elements
  */
 vector<string> partitionAllTrans(string trans) {
 	const char delim = ';';
@@ -77,12 +81,12 @@ vector<string> partitionAllTrans(string trans) {
 	return allTrans;
 }
 
-/*
- * task: 	check if translation is part of or equal to solution
- * arguments:
- * 		uTrans: 	user translations separated with semicolons
- * 		trans: 		correct translations from dict fillSides
- * return: 	boolean if at least one user trans is in the dict translations
+/**
+ * Checks if user given translations are a subset of the accepted translations.
+ *
+ * @param uTrans User translations separated by semicolons
+ * @param trans Correct translations from dictionary file 
+ * @return True if at least one user trans fits the dictionary file translations
  */
 bool isSubSet(string uTrans, string trans) {
 	vector<string> vecUTrans = partitionAllTrans(uTrans);
@@ -100,6 +104,11 @@ bool isSubSet(string uTrans, string trans) {
 	else return false;
 }
 
+/**
+ * Creates a user input box around a given window
+ *
+ * @param winName The window where the user input box is positioned
+ */
 void mkInputBox(WINDOW * winName) {
 	int left,right,top,bottom,tlc,trc,blc,brc;
 	top = left = right = tlc = trc = blc = brc = 23; //space
@@ -108,11 +117,25 @@ void mkInputBox(WINDOW * winName) {
 	wrefresh(winName);
 }
 
+/**
+ * Queries the user for a single japanese to english translation
+ *
+ * @param queries Window containing the japanese vocabulary that is to be translated by the user
+ * @param reply Window containing information whether the user translation is correct or not 
+ * @param uInput Window where the user enters his translation
+ * @param Vocs Structure containing all vocabulary and their amount
+ * @param idx Index of the vocabulary to be queried
+ * @return Number which is -1 if ctrl(o) is pressed (go back to main menu) and 0 else
+ */
 int mkOpt1Win(WINDOW * queries, WINDOW * reply, WINDOW * uInput, VocInfo Vocs, int idx) {
 	curs_set(true); cbreak(); echo(); nonl(); intrflush(stdscr, false); keypad(stdscr, true);
 	refresh();
 
+	/* colors */
 	init_pair(1, COLOR_RED, COLOR_BLACK);
+	init_pair(2, COLOR_GREEN, COLOR_BLACK);
+	/* colors */
+
 	int queriesWidth = 60;
 	int maxInputLen = 25;
 	char uTrans[maxInputLen];
@@ -129,23 +152,25 @@ int mkOpt1Win(WINDOW * queries, WINDOW * reply, WINDOW * uInput, VocInfo Vocs, i
 
 	/* get user input */
 	mvwgetnstr(uInput, 0, 1, uTrans,maxInputLen);
-	
+	wclear(reply);
+
 	if (isSubSet(uTrans, en)) {
-		wclear(reply);
-		string answer = "correct";
-		mvwprintw(reply, 0, 30-answer.length()/2, "%s",answer.c_str());
-		wrefresh(reply);
+		wattron(reply, COLOR_PAIR(2));
+		box(reply, 0, 0);
+		wattroff(reply, COLOR_PAIR(2));
+		string answer0 = "correct";
+		mvwprintw(reply, 1, queriesWidth/2-answer0.length()/2, answer0.c_str());
 	}
 	else {
-		wclear(reply);
-		mvwprintw(reply, 0, 0, "false");
-		mvwprintw(reply, 1, 0, "answer:");
 		wattron(reply, COLOR_PAIR(1));
+		box(reply, 0, 0);
+		wmove(reply, 1, queriesWidth/2-ja.length()/6-furi.length()/6-en.length()/2-6);
 		(furi.empty()) ? wprintw(reply, ja.c_str()) : wprintw(reply, "%s [%s]",ja.c_str(),furi.c_str()); 
 		wattroff(reply, COLOR_PAIR(1));
 		wprintw(reply, " -> %s",en.c_str()); 
-		wrefresh(reply);
 	}
+
+	wrefresh(reply);
 	wclear(queries);
 	wmove(uInput, 0, 0); wclrtoeol(uInput);
 	refresh();
@@ -154,11 +179,25 @@ int mkOpt1Win(WINDOW * queries, WINDOW * reply, WINDOW * uInput, VocInfo Vocs, i
 	/* get user input */
 }
 
+/**
+ * Queries the user for a single english to japanese translation
+ *
+ * @param queries Window containing the english vocabulary that is to be translated by the user
+ * @param reply Window containing information whether the user translation is correct or not 
+ * @param uInput Window where the user enters his translation
+ * @param Vocs Structure containing all vocabulary and their amount
+ * @param idx Index of the vocabulary to be queried
+ * @return Number which is -1 if ctrl(o) is pressed (go back to main menu) and 0 else
+ */
 int mkOpt2Win(WINDOW * queries, WINDOW * reply, WINDOW * uInput, VocInfo Vocs, int idx) {
 	curs_set(true); cbreak(); echo(); nonl(); intrflush(stdscr, false); keypad(stdscr, true);
 	refresh();
-
+	
+	/* colors */
 	init_pair(1, COLOR_RED, COLOR_BLACK);
+	init_pair(2, COLOR_GREEN, COLOR_BLACK);
+	/* colors */
+
 	int queriesWidth = 60;
 	int maxInputLen = 25;
 	char uTrans[maxInputLen];
@@ -174,32 +213,52 @@ int mkOpt2Win(WINDOW * queries, WINDOW * reply, WINDOW * uInput, VocInfo Vocs, i
 	/* print query */
 	
 	/* get user input */
-	mvwgetnstr(uInput, 0, 1, uTrans,maxInputLen);
+/*	wmove(uInput, 0, 1);
+	wint_t hel[maxInputLen];
+	for (int i=0;i<maxInputLen;++i) {
+		wget_wch(uInput, &hel[i]);
+		if (hel[i] == 13) break;
+		else if (hel[i] == ctrl('o')) return -1;
+		else uTrans[i] = hel[i];
+
+		if (hel[i] == 127) {
+			wmove(uInput, 0, i-1);
+			wclrtoeol(uInput);
+			--i;
+		}
+	}
+	std::cout << uTrans;
+*/
 		
+	mvwgetnstr(uInput, 0, 1, uTrans,maxInputLen);
+	wclear(reply);
+
 	if (isSubSet(uTrans, ja)) {
-		wclear(reply);
-		mvwprintw(reply, 0, 0, "%s","correct");
-		wrefresh(reply);
+		string answer0 = "correct";
+		wattron(reply, COLOR_PAIR(2));
+		box(reply, 0, 0);
+		wattroff(reply, COLOR_PAIR(2));
+		mvwprintw(reply, 1, queriesWidth/2-answer0.length()/2, answer0.c_str());
 	}
 	else if (isSubSet(uTrans, furi)) {
-		wclear(reply);
-		mvwprintw(reply, 0, 0, "%s","correct, kanji notation: ");
+		string kanjiExis = "kanji notation: ";
+		wattron(reply, COLOR_PAIR(2));
+		box(reply, 0, 0);
+		wattroff(reply, COLOR_PAIR(2));
+		mvwprintw(reply, 1, queriesWidth/2-kanjiExis.length()/2-ja.length()/6, kanjiExis.c_str());
 		wattron(reply,COLOR_PAIR(1));
 		wprintw(reply, ja.c_str());
 		wattroff(reply,COLOR_PAIR(1));
-		wrefresh(reply);
 	}
 	else {
-		wclear(reply);
-		mvwprintw(reply, 0, 0, "false");
-		mvwprintw(reply, 1, 0, "answer:");
 		wattron(reply, COLOR_PAIR(1));
-		wprintw(reply, en.c_str());
+		box(reply, 0, 0);
+		mvwprintw(reply,1, queriesWidth/2-en.length()/6-ja.length()/6-furi.length()/6-6, en.c_str());
 		wattroff(reply, COLOR_PAIR(1));
 		(furi.empty()) ? wprintw(reply, " -> %s",ja.c_str()) : wprintw(reply, " -> %s [%s]",ja.c_str(),furi.c_str()); 
-		wrefresh(reply);
 	}
 
+	wrefresh(reply);
 	wclear(queries);
 	wmove(uInput, 0, 0); wclrtoeol(uInput);
 	refresh();
@@ -208,6 +267,16 @@ int mkOpt2Win(WINDOW * queries, WINDOW * reply, WINDOW * uInput, VocInfo Vocs, i
 	/* get user input */
 }
 
+/**
+ * Queries the user for mixed translations, meaning english to japanese and vice versa
+ *
+ * @param queries Window containing the english or japanese vocabulary that is to be translated by the user
+ * @param reply Window containing information whether the user translation is correct or not 
+ * @param uInput Window where the user enters his translation
+ * @param Vocs Structure containing all vocabulary and their amount
+ * @param idx Index of the vocabulary to be queried
+ * @return Number which is -1 if ctrl(o) is pressed (go back to main menu) and 0 else
+ */
 int mkOpt3Win(WINDOW * queries, WINDOW * reply, WINDOW * uInput, VocInfo Vocs, int idx) {
 	curs_set(true); cbreak(); echo(); nonl(); intrflush(stdscr, false); keypad(stdscr, true);
 	refresh();
@@ -225,6 +294,12 @@ int mkOpt3Win(WINDOW * queries, WINDOW * reply, WINDOW * uInput, VocInfo Vocs, i
 	//refresh();
 }
 
+/**
+ * Queries the user for all vocabulary found in the dictionary file
+ *
+ * @param dict Name of the dictionary file
+ * @param uOption Query option selected by user (english to japanese, japanese to english or mixed)
+ */
 void queryVocs(string dict,int uOption) {
 	curs_set(true); cbreak(); echo(); nonl(); intrflush(stdscr, false); keypad(stdscr, true);
 	clear();
@@ -295,6 +370,13 @@ void queryVocs(string dict,int uOption) {
 	}
 }
 
+/**
+ * Creates a menu where the user selects a query type (english to japanese, japanese to english, mixed)
+ *
+ * @param opts Window holding all options
+ * @param choices The options which the user can select
+ * @param fields The number of options (this argument should be removed, as it can be derived from the size of choices)
+ */
 int selectionMenu(WINDOW * opts, string choices[], int fields) {
 	keypad(opts, true);
 	int selected = 0;
@@ -321,6 +403,16 @@ int selectionMenu(WINDOW * opts, string choices[], int fields) {
 	return selected;
 }
 
+/**
+ * Creates the window containing the option select window
+ *
+ * @param query1 Query type prompting japanese to english translations
+ * @param query2 Query type prompting english to japanese translations
+ * @param query3 Query type prompting mixed translations
+ * @param exit Option to quit the program
+ * @param optsHeight Height of the options window
+ * @return Number of the selected option
+ */
 int mkOptsWin(string query1, string query2, string query3, string exit, int optsHeight){
 	curs_set(false); cbreak(); noecho(); nonl(); intrflush(stdscr, false); keypad(stdscr, true);
 	clear();
@@ -331,7 +423,6 @@ int mkOptsWin(string query1, string query2, string query3, string exit, int opts
 	refresh();
 
 	/* box with name */
-//	init_pair(2, COLOR_RED, 0);
 	wattron(opts, COLOR_PAIR(2));
 	box(opts, 0, 0);
 	string tag = "Options";
@@ -344,6 +435,12 @@ int mkOptsWin(string query1, string query2, string query3, string exit, int opts
 	return selectionMenu(opts, choices, 4);
 }
 
+/**
+ * Creates the start up window
+ *
+ * @param name The name of the program
+ * @param subtitle A subtitle 
+ */
 void mkStartWin(string name, string subtitle) {
 	/* header */
 	noecho(); curs_set(false);
