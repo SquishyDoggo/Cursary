@@ -6,7 +6,7 @@ Clone the repository and run `make` inside the project directory.
 
 ## :ear: Explanation
 __Cursary's__ interface is quickly understood. On startup :bearded_person: has the option to choose a query type.
-Currently there are three:\
+Currently there are three:
 
 ![options_menu](demo/options_menu.jpg "Options menu")
 
