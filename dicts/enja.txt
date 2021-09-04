@@ -216,7 +216,7 @@ to come out
 出る
 でる
 
-to exist
+to exist (animate)
 いる
 
 to wear
@@ -251,7 +251,7 @@ to buy
 買う
 かう
 
-to exist
+to exist (inanimate)
 ある
 
 to die
