@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <bits/types/wint_t.h>
+#include <cctype>
 #include <cstddef>
 #include <cstdio>
 #include <linux/limits.h>
@@ -15,6 +16,7 @@
 #include <ncurses.h>
 #include <limits.h>
 #include <iostream>
+#include <chrono>
 
 #define ctrl(x) (x & 0x1F)
 
@@ -25,7 +27,9 @@ using std::fstream;
 using std::cerr;
 using std::endl;
 
-/* Stores all vocabulary and their amount */
+/**
+ * Stores all vocabulary and their amount
+ */
 struct VocInfo {
 	int vocNum;
 	vector<string> en;
@@ -96,6 +100,8 @@ bool isSubSet(string uTrans, string trans) {
 	int vocsRight = 0;
 	for (int i=0; i<vecUTrans.size(); ++i) {
 		for (int j=0; j<vecTrans.size();++j) {
+			std::transform(vecUTrans[i].begin(),vecUTrans[i].end(),vecUTrans[i].begin(),::tolower); // to lower case
+			std::transform(vecTrans[j].begin(),vecTrans[j].end(),vecTrans[j].begin(),::tolower); // to lower case
 			if (vecUTrans[i] == vecTrans[j]) {
 				++vocsRight;
 				break;
@@ -127,9 +133,10 @@ void mkInputBox(WINDOW * winName) {
  * @param uInput Window where the user enters his translation
  * @param Vocs Structure containing all vocabulary and their amount
  * @param idx Index of the vocabulary to be queried
+ * @param curVoc Number of current vocabulary (to show how many words were queried so far)
  * @return Number which is -1 if ctrl(o) is pressed (go back to main menu) and 0 else
  */
-int queryJaToEn(WINDOW * queries, WINDOW * reply, WINDOW * uInput, WINDOW * userStats, VocInfo Vocs, int idx) {
+int queryJaToEn(WINDOW * queries, WINDOW * reply, WINDOW * uInput, WINDOW * userStats, VocInfo Vocs, int idx, int curVoc) {
 	curs_set(true); cbreak(); echo(); nonl(); intrflush(stdscr, false); keypad(stdscr, true);
 	refresh();
 
@@ -163,13 +170,13 @@ int queryJaToEn(WINDOW * queries, WINDOW * reply, WINDOW * uInput, WINDOW * user
 	wattroff(userStats, COLOR_PAIR(4));
 	/* box */
 	/* header */
-	mvwprintw(userStats, 0, 2, "Statistics");
+	mvwprintw(userStats, 0, 2, "Score");
 	/* header */
 	wattron(userStats, COLOR_PAIR(2));
 	mvwprintw(userStats, userStatsHeight/2, userStatsWidth/2-1, "%d",corUTrans);
 	wattroff(userStats, COLOR_PAIR(2));
 	wprintw(userStats, "/");
-	wprintw(userStats, "%d",idx);
+	wprintw(userStats, "%d",curVoc);
 	string userStatsMessage = "Total: ";
 	mvwprintw(userStats, userStatsHeight-1, 1, "%s%d",userStatsMessage.c_str(),Vocs.vocNum);
 	wrefresh(userStats);
@@ -215,7 +222,7 @@ int queryJaToEn(WINDOW * queries, WINDOW * reply, WINDOW * uInput, WINDOW * user
 	mvwprintw(userStats, userStatsHeight/2, userStatsWidth/2-1, "%d",corUTrans);
 	wattroff(userStats, COLOR_PAIR(2));
 	wprintw(userStats, "/");
-	wprintw(userStats, "%d",idx+1);
+	wprintw(userStats, "%d",curVoc+1);
 	mvwprintw(userStats, userStatsHeight-1, 1, "%s%d",userStatsMessage.c_str(),Vocs.vocNum);
 	wrefresh(userStats);
 	/* fill stats window */
@@ -232,9 +239,10 @@ int queryJaToEn(WINDOW * queries, WINDOW * reply, WINDOW * uInput, WINDOW * user
  * @param uInput Window where the user enters his translation
  * @param Vocs Structure containing all vocabulary and their amount
  * @param idx Index of the vocabulary to be queried
+ * @param curVoc Number of current vocabulary (to show how many words were queried so far)
  * @return Number which is -1 if ctrl(o) is pressed (go back to main menu) and 0 else
  */
-int queryEnToJa(WINDOW * queries, WINDOW * reply, WINDOW * uInput, WINDOW * userStats, VocInfo Vocs, int idx) {
+int queryEnToJa(WINDOW * queries, WINDOW * reply, WINDOW * uInput, WINDOW * userStats, VocInfo Vocs, int idx, int curVoc) {
 	curs_set(true); cbreak(); echo(); nonl(); intrflush(stdscr, false); keypad(stdscr, true);
 	refresh();
 	
@@ -290,7 +298,7 @@ int queryEnToJa(WINDOW * queries, WINDOW * reply, WINDOW * uInput, WINDOW * user
 	mvwprintw(userStats, userStatsHeight/2, userStatsWidth/2-1, "%d", corUTrans);
 	wattroff(userStats, COLOR_PAIR(2));
 	wprintw(userStats, "/");
-	wprintw(userStats, "%d",idx);
+	wprintw(userStats, "%d",curVoc);
 	string userStatsMessage = "Total: ";
 	mvwprintw(userStats, userStatsHeight-1, 1, "%s%d",userStatsMessage.c_str(),Vocs.vocNum);
 	wrefresh(userStats);
@@ -345,7 +353,7 @@ int queryEnToJa(WINDOW * queries, WINDOW * reply, WINDOW * uInput, WINDOW * user
 	mvwprintw(userStats, userStatsHeight/2, userStatsWidth/2-1, "%d", corUTrans);
 	wattroff(userStats, COLOR_PAIR(2));
 	wprintw(userStats, "/");
-	wprintw(userStats, "%d",idx+1);
+	wprintw(userStats, "%d",curVoc);
 	mvwprintw(userStats, userStatsHeight-1, 1, "%s%d",userStatsMessage.c_str(),Vocs.vocNum);
 	wrefresh(userStats);
 	/* fill stats window */
@@ -362,17 +370,18 @@ int queryEnToJa(WINDOW * queries, WINDOW * reply, WINDOW * uInput, WINDOW * user
  * @param uInput Window where the user enters his translation
  * @param Vocs Structure containing all vocabulary and their amount
  * @param idx Index of the vocabulary to be queried
+ * @param curVoc number of current vocabulary (to show how many words were queried so far)
  * @return Number which is -1 if ctrl(o) is pressed (go back to main menu) and 0 else
  */
-int queryMixed(WINDOW * queries, WINDOW * reply, WINDOW * uInput, WINDOW * userStats, VocInfo Vocs, int idx) {
+int queryMixed(WINDOW * queries, WINDOW * reply, WINDOW * uInput, WINDOW * userStats, VocInfo Vocs, int idx, int curVoc) {
 	curs_set(true); cbreak(); echo(); nonl(); intrflush(stdscr, false); keypad(stdscr, true);
 	refresh();
 
 	/* randomly choose to query either ja->en or en->ja */
 	int rndm = rand() % 2;
 	int status;
-	if (rndm == 0) status = queryJaToEn(queries, reply, uInput, userStats, Vocs, idx);
-	else status = queryEnToJa(queries, reply, uInput, userStats, Vocs, idx);
+	if (rndm == 0) status = queryJaToEn(queries, reply, uInput, userStats, Vocs, idx, curVoc);
+	else status = queryEnToJa(queries, reply, uInput, userStats, Vocs, idx, curVoc);
 	/* randomly choose to query either ja->en or en->ja */
 
 	wclear(queries);
@@ -433,7 +442,6 @@ void queryAll(string dict,int uOption) {
 	WINDOW * userStats = newwin(userStatsHeight, userStatsWidth, userStatsY, userStatsX);
 	refresh();
 	/* user statistics window */
-	
 
 	/* user input */
 	int uInputHeight = 2; int uInputWidth = 30;
@@ -444,13 +452,19 @@ void queryAll(string dict,int uOption) {
 	/* user input */
 
 	VocInfo Vocs = getVocs(dict);
-
+	/* to query in a random order */
+	srand(time(NULL)); // init random seed based on sys time
+	vector<int> indexes;
+	for (int t=0; t<Vocs.vocNum;++t) indexes.push_back(t);	
+	std::random_shuffle(indexes.begin(),indexes.end());
+	/* to query in a random order */
+	
 	if (uOption == 0) {
 		wattron(stdscr, COLOR_PAIR(3));
 		mvwprintw(stdscr,0, 2, opt1.c_str());
 		wattroff(stdscr, COLOR_PAIR(3));
 		for (int i=0; i<Vocs.vocNum; ++i) {
-			int status = queryJaToEn(queries, reply, uInput, userStats, Vocs, i);
+			int status = queryJaToEn(queries, reply, uInput, userStats, Vocs, indexes[i],i);
 			if (status == -1) break;
 		} 
 	}
@@ -459,7 +473,7 @@ void queryAll(string dict,int uOption) {
 		mvwprintw(stdscr,0, 2, opt2.c_str());
 		wattroff(stdscr, COLOR_PAIR(3));
 		for (int i=0; i<Vocs.vocNum; ++i) {
-			int status = queryEnToJa(queries, reply, uInput, userStats, Vocs, i);
+			int status = queryEnToJa(queries, reply, uInput, userStats, Vocs, indexes[i],i);
 			if (status == -1) break;
 		}
 	}
@@ -467,9 +481,8 @@ void queryAll(string dict,int uOption) {
 		wattron(stdscr, COLOR_PAIR(3));
 		mvwprintw(stdscr,0, 2, opt3.c_str());
 		wattroff(stdscr, COLOR_PAIR(3));
-		srand(time(NULL)); // init random seed based on sys time
 		for (int i=0; i<Vocs.vocNum; ++i) {
-			int status = queryMixed(queries, reply, uInput, userStats, Vocs, i);
+			int status = queryMixed(queries, reply, uInput, userStats, Vocs, indexes[i],i);
 			if (status == -1) break;
 		}
 	}
