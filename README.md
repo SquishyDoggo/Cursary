@@ -16,7 +16,7 @@ Right below is the *reply* field that informs :curly_haired_man: whether the inp
 translation is shown.
 Located on the bottom is the *input* field where user input is received.\
 __Cursary__ keeps track of how many words :curly_haired_man: has been queried, how many of them he knew and their total amount.
-These informations are displayed in the *statistics* field. Here 27 of a total 71 words have been queried so far and :curly_haired_man: translated 6 of them correctly .\
+These informations are displayed in the *statistics* field. Here 27 of a total 71 words have been queried so far and :curly_haired_man: translated 6 of them correctly.
 
 During an active session, i.e. while vocabulary is being queried, the following key combinations are bound: 
 | Key Bindings 	| 							|
