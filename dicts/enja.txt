@@ -12,7 +12,7 @@ seven
 
 ten
 十
-じゆう
+じゅう
 
 eight
 八
@@ -98,7 +98,7 @@ no
 
 today
 今日
-きよう
+きょう
 
 exam
 試験
