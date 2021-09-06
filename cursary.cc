@@ -137,7 +137,7 @@ void mkInputBox(WINDOW * winName) {
  * @return Number which is -1 if ctrl(o) is pressed (go back to main menu) and 0 else
  */
 int queryJaToEn(WINDOW * queries, WINDOW * reply, WINDOW * uInput, WINDOW * userStats, VocInfo Vocs, int idx, int curVoc) {
-	curs_set(true); cbreak(); echo(); nonl(); intrflush(stdscr, false); keypad(stdscr, true);
+	curs_set(true); cbreak(); echo(); nonl(); intrflush(stdscr, false); keypad(uInput, true);
 	refresh();
 
 	/* colors */
@@ -150,13 +150,14 @@ int queryJaToEn(WINDOW * queries, WINDOW * reply, WINDOW * uInput, WINDOW * user
 	int userStatsWidth = 20;
 	int maxInputLen = 25;
 	char uTrans[maxInputLen];
+	bool isFuriVisible = false;
 
 	/* print query */
 	string ja = Vocs.ja[idx];
 	string en = Vocs.en[idx];
 	string furi = Vocs.furi[idx];
 	wattron(queries,COLOR_PAIR(1));
-	mvwprintw(queries, 0, queriesWidth/2-ja.length()/3, ja.c_str()); // divided by 6 because one ja char has a length of 3
+	mvwprintw(queries, 1, queriesWidth/2-ja.length()/3, ja.c_str()); // divided by 6 because one ja char has a length of 3
 	wattroff(queries,COLOR_PAIR(1));
 	wrefresh(queries);
 	/* print query */
@@ -182,8 +183,41 @@ int queryJaToEn(WINDOW * queries, WINDOW * reply, WINDOW * uInput, WINDOW * user
 	wrefresh(userStats);
 	/* fill stats window */
 
+	wmove(uInput, 0, 1);
 	/* get user input */
-	mvwgetnstr(uInput, 0, 1, uTrans,maxInputLen);
+	for (int i=0;i<maxInputLen;++i) {
+		char u = wgetch(uInput);
+		if (u == 13) break;
+		else if (u == ctrl('o')) return -1;
+		else if (u == 127) {
+			if (i>0) {
+				i-=2;
+				wdelch(uInput);
+			}
+		}
+		/* clear the whole line and delete all saved data in uTrans */
+		else if (u == ctrl('n')) {
+			wmove(uInput, 0, 1);
+			wclrtoeol(uInput);
+			std::fill(uTrans, uTrans+maxInputLen, 0);
+			i = -1;
+		}
+		/* toggle furigana visibility */
+		else if (u == ctrl('f')) {
+			wmove(uInput, 0, 1);
+			wclrtoeol(uInput);
+			if (isFuriVisible) {
+				wattron(queries, A_INVIS);
+				isFuriVisible = false;
+			} else isFuriVisible = true;
+			(furi.empty()) ? : mvwprintw(queries, 0, queriesWidth/2-furi.length()/3-1, "[%s]",furi.c_str()); // only print if not empty
+			wattroff(queries, A_INVIS);
+			wrefresh(queries);
+		}
+		else uTrans[i] = u;
+	}
+	/* get user input */
+
 	wclear(reply);
 
 	if (isSubSet(uTrans, en)) {
@@ -228,7 +262,6 @@ int queryJaToEn(WINDOW * queries, WINDOW * reply, WINDOW * uInput, WINDOW * user
 	/* fill stats window */
 
 	return 0;
-	/* get user input */
 }
 
 /**
@@ -243,7 +276,7 @@ int queryJaToEn(WINDOW * queries, WINDOW * reply, WINDOW * uInput, WINDOW * user
  * @return Number which is -1 if ctrl(o) is pressed (go back to main menu) and 0 else
  */
 int queryEnToJa(WINDOW * queries, WINDOW * reply, WINDOW * uInput, WINDOW * userStats, VocInfo Vocs, int idx, int curVoc) {
-	curs_set(true); cbreak(); echo(); nonl(); intrflush(stdscr, false); keypad(stdscr, true);
+	curs_set(true); cbreak(); echo(); nonl(); intrflush(stdscr, false); keypad(uInput, true);
 	refresh();
 	
 	/* colors */
@@ -267,24 +300,6 @@ int queryEnToJa(WINDOW * queries, WINDOW * reply, WINDOW * uInput, WINDOW * user
 	wrefresh(queries);
 	/* print query */
 	
-	/* get user input */
-/*	wmove(uInput, 0, 1);
-	wint_t hel[maxInputLen];
-	for (int i=0;i<maxInputLen;++i) {
-		wget_wch(uInput, &hel[i]);
-		if (hel[i] == 13) break;
-		else if (hel[i] == ctrl('o')) return -1;
-		else uTrans[i] = hel[i];
-
-		if (hel[i] == 127) {
-			wmove(uInput, 0, i-1);
-			wclrtoeol(uInput);
-			--i;
-		}
-	}
-	std::cout << uTrans;
-*/
-
 	/* fill stats window */
 	/* box */
 	wattron(userStats, COLOR_PAIR(4));
@@ -304,7 +319,29 @@ int queryEnToJa(WINDOW * queries, WINDOW * reply, WINDOW * uInput, WINDOW * user
 	wrefresh(userStats);
 	/* fill stats window */
 		
-	mvwgetnstr(uInput, 0, 1, uTrans,maxInputLen);
+	wmove(uInput, 0, 1);
+	/* get user input */
+	for (int i=0;i<maxInputLen;++i) {
+		char u = wgetch(uInput);
+		if (u == 13) break;
+		else if (u == ctrl('o')) return -1;
+		else if (u == 127) {
+			if (i>0) {
+				i-=2;
+				wdelch(uInput);
+			}
+		}
+		/* clear the whole line and delete all saved data in uTrans */
+		else if (u == ctrl('n')) {
+			wmove(uInput, 0, 1);
+			wclrtoeol(uInput);
+			std::fill(uTrans, uTrans+maxInputLen, 0);
+			i = -1;
+		}
+		else uTrans[i] = u;
+	}
+	/* get user input */
+
 	wclear(reply);
 
 	if (isSubSet(uTrans, ja)) {
@@ -359,7 +396,6 @@ int queryEnToJa(WINDOW * queries, WINDOW * reply, WINDOW * uInput, WINDOW * user
 	/* fill stats window */
 		
 	return 0;
-	/* get user input */
 }
 
 /**
@@ -443,6 +479,18 @@ void queryAll(string dict,int uOption) {
 	refresh();
 	/* user statistics window */
 
+	/* user results window */
+	int resultsHeight, resultsWidth, resultsY, resultsX;
+	userStatsY = maxY/2-resultsHeight/2;
+	userStatsX = maxX/2-resultsWidth/2;
+	userStatsHeight = 12;
+	userStatsWidth = 25;
+	WINDOW * results = newwin(resultsHeight, resultsWidth, resultsY, resultsX);
+	refresh();
+	box(results, 0, 0);
+	wrefresh(results);
+	/* user results window */
+
 	/* user input */
 	int uInputHeight = 2; int uInputWidth = 30;
 	int uInputPosY = 3*maxY/4-uInputHeight/2; int uInputPosX = (maxX-uInputWidth)/2;
@@ -490,8 +538,7 @@ void queryAll(string dict,int uOption) {
 	corUTrans = 0;
 	/* so that user has time to look at stats */
 	curs_set(false);
-	wclear(queries); wclear(reply); wclear(uInput); wrefresh(queries); wrefresh(reply); wrefresh(uInput);
-	refresh();
+	werase(queries);wrefresh(queries);werase(reply);wrefresh(reply);werase(uInput);wrefresh(uInput);
 	getch();
 	/* so that user has time to look at stats */
 }
