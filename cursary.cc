@@ -295,7 +295,7 @@ int queryEnToJa(WINDOW * queries, WINDOW * reply, WINDOW * uInput, WINDOW * user
 	string ja = Vocs.ja[idx];
 	string furi = Vocs.furi[idx];
 	wattron(queries,COLOR_PAIR(1));
-	mvwprintw(queries, 0, queriesWidth/2-en.length()/2, en.c_str());
+	mvwprintw(queries, 1, queriesWidth/2-en.length()/2, en.c_str());
 	wattroff(queries,COLOR_PAIR(1));
 	wrefresh(queries);
 	/* print query */
