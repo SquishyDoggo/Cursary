@@ -150,6 +150,7 @@ int queryJaToEn(WINDOW * queries, WINDOW * reply, WINDOW * uInput, WINDOW * user
 	int userStatsWidth = 20;
 	int maxInputLen = 25;
 	char uTrans[maxInputLen];
+	std::fill(uTrans, uTrans+maxInputLen, 0);
 	bool isFuriVisible = false;
 
 	/* print query */
@@ -289,6 +290,7 @@ int queryEnToJa(WINDOW * queries, WINDOW * reply, WINDOW * uInput, WINDOW * user
 	int userStatsWidth = 20;
 	int maxInputLen = 25;
 	char uTrans[maxInputLen];
+	std::fill(uTrans, uTrans+maxInputLen, 0);
 
 	/* print query */
 	string en = Vocs.en[idx];
