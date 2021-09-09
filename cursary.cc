@@ -137,7 +137,7 @@ void mkInputBox(WINDOW * winName) {
  * @return Number which is -1 if ctrl(o) is pressed (go back to main menu) and 0 else
  */
 int queryJaToEn(WINDOW * queries, WINDOW * reply, WINDOW * uInput, WINDOW * userStats, VocInfo Vocs, int idx, int curVoc) {
-	curs_set(true); cbreak(); echo(); nonl(); intrflush(stdscr, false); keypad(uInput, true);
+	curs_set(true); cbreak(); nonl(); noecho(); intrflush(stdscr, false); keypad(uInput, true);
 	refresh();
 
 	/* colors */
@@ -190,23 +190,21 @@ int queryJaToEn(WINDOW * queries, WINDOW * reply, WINDOW * uInput, WINDOW * user
 		char u = wgetch(uInput);
 		if (u == 13) break;
 		else if (u == ctrl('o')) return -1;
-		else if (u == 127) {
-			if (i>0) {
-				i-=2;
-				wdelch(uInput);
-			}
+	
+		else if ( (int) u == ctrl(KEY_BACKSPACE) ) { 
+			if (i>0) i-=1;
 		}
+		
 		/* clear the whole line and delete all saved data in uTrans */
 		else if (u == ctrl('n')) {
 			wmove(uInput, 0, 1);
 			wclrtoeol(uInput);
-			std::fill(uTrans, uTrans+maxInputLen, 0);
+			std::fill(uTrans, uTrans+maxInputLen, 0); // reset uTrans 
 			i = -1;
 		}
 		/* toggle furigana visibility */
 		else if (u == ctrl('f')) {
-			wmove(uInput, 0, 1);
-			wclrtoeol(uInput);
+			curs_set(false);
 			if (isFuriVisible) {
 				wattron(queries, A_INVIS);
 				isFuriVisible = false;
@@ -214,8 +212,14 @@ int queryJaToEn(WINDOW * queries, WINDOW * reply, WINDOW * uInput, WINDOW * user
 			(furi.empty()) ? : mvwprintw(queries, 0, queriesWidth/2-furi.length()/3-1, "[%s]",furi.c_str()); // only print if not empty
 			wattroff(queries, A_INVIS);
 			wrefresh(queries);
+			i -= 1;
 		}
-		else uTrans[i] = u;
+		else {
+			wrefresh(uInput);
+			curs_set(true);
+			uTrans[i] = u;
+			wprintw(uInput, "%c",u);
+		}
 	}
 	/* get user input */
 
@@ -538,11 +542,6 @@ void queryAll(string dict,int uOption) {
 	}
 
 	corUTrans = 0;
-	/* so that user has time to look at stats */
-	curs_set(false);
-	werase(queries);wrefresh(queries);werase(reply);wrefresh(reply);werase(uInput);wrefresh(uInput);
-	getch();
-	/* so that user has time to look at stats */
 }
 
 /**
@@ -689,7 +688,7 @@ int main(int argc, char** argv) {
 	const string dict = buffer + locDictDir;
 
 	setlocale(LC_ALL, "");
-	curs_set(false); initscr(); cbreak(); noecho(); nonl(); intrflush(stdscr, false); keypad(stdscr, true);
+	initscr(); cbreak(); noecho(); nonl(); intrflush(stdscr, false); keypad(stdscr, true); curs_set(false);
 
 	if (!has_colors()) throw "TERMINAL DOES NOT SUPPORT COLORS.";
 	try {
