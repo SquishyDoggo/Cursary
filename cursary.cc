@@ -40,7 +40,8 @@ struct VocInfo {
 const string opt1 = "Japanese -> English";
 const string opt2 = "English ->  Japanese";
 const string opt3 = "Japanese <-> English";
-const string opt4 = "Exit";
+const string opt4 = "Dictionaries";
+const string opt5 = "Exit";
 
 int corUTrans = 0; // number of correct user translations
 
@@ -66,7 +67,7 @@ VocInfo getVocs(string dict) {
 		Vocs.furi.push_back(line);
 	}
 	dictFile.close();
-	Vocs.vocNum = Vocs.en.size()-1;
+	Vocs.vocNum = Vocs.en.size();
 	return Vocs;
 } 
 
@@ -313,7 +314,7 @@ int queryEnToJa(WINDOW * queries, WINDOW * reply, WINDOW * uInput, WINDOW * user
 	wattroff(userStats, COLOR_PAIR(4));
 	/* box */
 	/* header */
-	mvwprintw(userStats, 0, 2, "Statistics");
+	mvwprintw(userStats, 0, 2, "Score");
 	/* header */
 	wattron(userStats, COLOR_PAIR(2));
 	mvwprintw(userStats, userStatsHeight/2, userStatsWidth/2-1, "%d", corUTrans);
@@ -549,9 +550,8 @@ void queryAll(string dict,int uOption) {
  *
  * @param opts Window holding all options
  * @param choices The options which the user can select
- * @param fields The number of options (this argument should be removed, as it can be derived from the size of choices)
  */
-int selectionMenu(WINDOW * opts, string choices[], int fields) {
+int selectionMenu(WINDOW * opts, vector<string> choices) {
 	keypad(opts, true);
 	/* colors */
 	init_pair(1, COLOR_RED, COLOR_BLACK);
@@ -559,7 +559,7 @@ int selectionMenu(WINDOW * opts, string choices[], int fields) {
 
 	int selected = 0;
 	while (true) {
-		for (int i=0;i<fields;++i) {
+		for (int i=0;i<choices.size();++i) {
 			if (selected == i) wattron(opts, COLOR_PAIR(1));
 			mvwprintw(opts, (opts->_maxy+1)/5+2*i, 1, choices[i].c_str());
 			wattroff(opts, COLOR_PAIR(1));
@@ -568,16 +568,43 @@ int selectionMenu(WINDOW * opts, string choices[], int fields) {
 
 		if ( (uDir==(int) 'k') || (uDir==KEY_UP) ) {
 			--selected;
-			if (selected == -1) selected = fields-1;
+			if (selected == -1) selected = choices.size()-1;
 		}
 		else if ( (uDir==(int) 'j') || (uDir==KEY_DOWN) ) {
 			++selected;
-			if (selected == 4) selected = 0;
+			if (selected == choices.size()) selected = 0;
 		}
 
 		if (uDir == 13) break;
 	}
 	return selected;
+}
+
+/**
+ * Creates window showing all dictionary files and lets user choose one
+ * @param projectDir The main project directory
+ * @return Name of the selected dictionary file
+ */
+string dictSelect(string projectDir) {
+	int y,x;
+	int choice;
+	vector<string> dicts;
+	string dictsDir = "/dicts";
+	getmaxyx(stdscr, y, x);
+	WINDOW * dictsSelect = newwin(8, 20, y/3, 2*x/3);
+	refresh();
+	box(dictsSelect, 0, 0);
+	wrefresh(dictsSelect);
+	mvwprintw(dictsSelect, 0, 2, "Dictionaries");
+	projectDir += dictsDir;
+	for (const auto & entry : std::filesystem::directory_iterator(projectDir)){
+		string yo = entry.path();
+		yo.erase(0,yo.find_last_of('/')+1);
+		dicts.push_back(yo);
+	}
+	choice = selectionMenu(dictsSelect, dicts);
+	werase(dictsSelect);
+	return dicts[choice];
 }
 
 /**
@@ -590,7 +617,7 @@ int selectionMenu(WINDOW * opts, string choices[], int fields) {
  * @param optsHeight Height of the options window
  * @return Number of the selected option
  */
-int mkOptsWin(string query1, string query2, string query3, string exit, int optsHeight){
+int mkOptsWin(string query1, string query2, string query3, string exit, string dicts, int optsHeight){
 	curs_set(false); cbreak(); noecho(); nonl(); intrflush(stdscr, false); keypad(stdscr, true);
 	clear();
 
@@ -612,8 +639,11 @@ int mkOptsWin(string query1, string query2, string query3, string exit, int opts
 	/* box with name */
 	wrefresh(opts);
 
-	string choices[] = {query1,query2,query3,opt4};
-	return selectionMenu(opts, choices, 4);
+	//string choices[] = {query1,query2,query3,opt4};
+	vector<string> choices;	
+	choices.push_back(query1); choices.push_back(query2); choices.push_back(query3); choices.push_back(exit);
+	choices.push_back(dicts);
+	return selectionMenu(opts, choices);
 }
 
 /**
@@ -679,13 +709,15 @@ void mkStartWin(string name, string subtitle) {
 }
 
 int main(int argc, char** argv) {
+	vector<string> dicts;
 	char buffer[250];
 	string path = __FILE__;
 	int pos = path.find("/cursary.cc");
 	size_t len = path.copy(buffer, pos, 0);
 	buffer[len] = '\0';
-	string locDictDir = "/dicts/enja.txt";
-	const string dict = buffer + locDictDir;
+	string dictSubDir = "/dicts/";
+	string dictFile = dictSubDir+"enja.txt";
+	string dict = buffer + dictFile;
 
 	setlocale(LC_ALL, "");
 	initscr(); cbreak(); noecho(); nonl(); intrflush(stdscr, false); keypad(stdscr, true); curs_set(false);
@@ -695,8 +727,9 @@ int main(int argc, char** argv) {
 			start_color();
 			mkStartWin("Cursary: Your Friendly Neighborhood Voc Trainer", "Insert Coin");
 		while (true) {
-			char uOption = mkOptsWin(opt1,opt2,opt3,opt4,11);
-			if (uOption == 3) break;
+			char uOption = mkOptsWin(opt1,opt2,opt3,opt4,opt5,13);
+			if (uOption == 4) break;
+			else if (uOption == 3) dict = buffer+dictSubDir+dictSelect(buffer);
 			else if ( (uOption==0)||(uOption==1)||(uOption==2) ) queryAll(dict,uOption);
 			else continue;
 		}
