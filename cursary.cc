@@ -114,6 +114,36 @@ bool isSubSet(string uTrans, string trans) {
 }
 
 /**
+ * Gets remaining translations that user did not know
+ *
+ * @param uTrans Translations entered by the user
+ * @param trans Correct translations from dictionary file
+ * @ return All remaining correct translations
+ */
+vector<string> getRemTrans(string uTrans, string trans) {
+	vector<string> vecUTrans = partitionAllTrans(uTrans);
+	vector<string> vecTrans = partitionAllTrans(trans);
+	vector<string> vecTransOgCase = vecTrans; /* dictionary translations vector with original case */
+	vector<string> remTrans = vecTrans; /* remaining translations the user did not know */
+
+	if (isSubSet(uTrans, trans)) {
+		for (int i=0; i<vecUTrans.size();++i) {
+			for (int j=0; j<=vecTrans.size();++j) {
+				std::transform(vecUTrans[i].begin(),vecUTrans[i].end(),vecUTrans[i].begin(),::tolower); // to lower case
+				std::transform(vecTrans[j].begin(),vecTrans[j].end(),vecTrans[j].begin(),::tolower); // to lower case
+				if (vecUTrans[i] == vecTrans[j]) {
+					remTrans.erase(remTrans.begin()+j);
+					vecTrans.erase(vecTrans.begin()+j);
+					break;
+				}
+			}	
+			if (vecTrans.size() == 0) break;
+		}
+	}
+	return remTrans;
+}
+
+/**
  * Creates a user input box around a given window
  *
  * @param winName The window where the user input box is positioned
@@ -225,22 +255,29 @@ int queryJaToEn(WINDOW * queries, WINDOW * reply, WINDOW * uInput, WINDOW * user
 	/* get user input */
 
 	wclear(reply);
+	/* getting all remaining translations and store them in a string separated by semicolons */
+	string remainTrans;
+	string delim = ";";
+	vector<string> remTrans = getRemTrans(uTrans, en);
+	for (int i=0;i<remTrans.size();++i) (i==0) ? remainTrans += remTrans[i] : remainTrans += delim+remTrans[i];
+	/* getting all remaining translations and store them in a string separated by semicolons */
 
 	if (isSubSet(uTrans, en)) {
 		++corUTrans;
 		wattron(reply, COLOR_PAIR(2));
 		box(reply, 0, 0);
 		wattroff(reply, COLOR_PAIR(2));
-		string answer0 = "correct";
-		mvwprintw(reply, 1, queriesWidth/2-answer0.length()/2, answer0.c_str());
+		string remRply;
+		(remTrans.size()>0) ? remRply = "also correct:" : remRply = "correct";
+		mvwprintw(reply, 1, queriesWidth/2-remainTrans.length()/2-remRply.length()/2, "%s %s",remRply.c_str(),remainTrans.c_str());
 	}
 	else {
 		wattron(reply, COLOR_PAIR(1));
 		box(reply, 0, 0);
-		wmove(reply, 1, queriesWidth/2-ja.length()/6-furi.length()/6-en.length()/2-6);
+		wmove(reply, 1, queriesWidth/2-ja.length()/6-furi.length()/6-remainTrans.length()/2-6);
 		(furi.empty()) ? wprintw(reply, ja.c_str()) : wprintw(reply, "%s [%s]",ja.c_str(),furi.c_str()); 
 		wattroff(reply, COLOR_PAIR(1));
-		wprintw(reply, " -> %s",en.c_str()); 
+		wprintw(reply, " -> %s", remainTrans.c_str()); 
 	}
 
 	wrefresh(reply);
@@ -597,6 +634,7 @@ string dictSelect(string projectDir) {
 	wrefresh(dictsSelect);
 	mvwprintw(dictsSelect, 0, 2, "Dictionaries");
 	projectDir += dictsDir;
+	/* get all file names in dictionary subfolder */
 	for (const auto & entry : std::filesystem::directory_iterator(projectDir)){
 		string yo = entry.path();
 		yo.erase(0,yo.find_last_of('/')+1);
