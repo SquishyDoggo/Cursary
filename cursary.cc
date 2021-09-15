@@ -267,17 +267,44 @@ int queryJaToEn(WINDOW * queries, WINDOW * reply, WINDOW * uInput, WINDOW * user
 		wattron(reply, COLOR_PAIR(2));
 		box(reply, 0, 0);
 		wattroff(reply, COLOR_PAIR(2));
-		string remRply;
+		string remRply; // all remaining replies
+		int startReplyIdx; // index for where reply text in reply window shall start
 		(remTrans.size()>0) ? remRply = "also correct:" : remRply = "correct";
-		mvwprintw(reply, 1, queriesWidth/2-remainTrans.length()/2-remRply.length()/2, "%s %s",remRply.c_str(),remainTrans.c_str());
+		string totReply = remRply+" "+remainTrans;
+		startReplyIdx = queriesWidth/2-totReply.length()/2;
+
+		/* checking if reply text fits inside of reply window and if not adjust reply text */
+		if (startReplyIdx < 1){ 
+			string lenAdjstRply = totReply.substr(0,queriesWidth-5)+"..."; // length adjusted string, as it otherwise would not fit in reply window
+			startReplyIdx = queriesWidth/2-lenAdjstRply.length()/2;
+			mvwprintw(reply, 1, 1, lenAdjstRply.c_str());   
+		} 
+		else {
+			mvwprintw(reply, 1, startReplyIdx, totReply.c_str());   
+		}
+		/* checking if reply text fits inside of reply window and if not adjust reply text */
+			
 	}
 	else {
 		wattron(reply, COLOR_PAIR(1));
 		box(reply, 0, 0);
-		wmove(reply, 1, queriesWidth/2-ja.length()/6-furi.length()/6-remainTrans.length()/2-6);
-		(furi.empty()) ? wprintw(reply, ja.c_str()) : wprintw(reply, "%s [%s]",ja.c_str(),furi.c_str()); 
 		wattroff(reply, COLOR_PAIR(1));
-		wprintw(reply, " -> %s", remainTrans.c_str()); 
+		string totReply; 
+		(furi.empty()) ? (totReply = ja) : (totReply = ja+" ["+furi+"]"); 
+		int startReplyIdx = queriesWidth/2-totReply.length()/2;
+		totReply+=" -> "+remainTrans;
+		startReplyIdx -= remainTrans.length()/2;
+		
+		/* checking if reply text fits inside of reply window and if not adjust reply text */
+		if (startReplyIdx < 1){ 
+			string lenAdjstRply = totReply.substr(0,queriesWidth-5)+"..."; // length adjusted string, as it otherwise would not fit in reply window
+			startReplyIdx = queriesWidth/2-lenAdjstRply.length()/2;
+			mvwprintw(reply, 1, startReplyIdx, lenAdjstRply.c_str());   
+		} 
+		else {
+			mvwprintw(reply, 1, startReplyIdx, totReply.c_str());   
+		}
+		/* checking if reply text fits inside of reply window and if not adjust reply text */
 	}
 
 	wrefresh(reply);
@@ -396,13 +423,14 @@ int queryEnToJa(WINDOW * queries, WINDOW * reply, WINDOW * uInput, WINDOW * user
 		wattroff(reply, COLOR_PAIR(2));
 		mvwprintw(reply, 1, queriesWidth/2-answer0.length()/2, answer0.c_str());
 	}
-	else if (isSubSet(uTrans, furi)) {
+	else if ( isSubSet(uTrans, furi) && (!furi.empty()) ) {
 		++corUTrans;
 		string kanjiExis = "kanji notation: ";
 		wattron(reply, COLOR_PAIR(2));
 		box(reply, 0, 0);
 		wattroff(reply, COLOR_PAIR(2));
-		mvwprintw(reply, 1, queriesWidth/2-kanjiExis.length()/2-ja.length()/6, kanjiExis.c_str());
+		wmove(reply, 1, queriesWidth/2-kanjiExis.length()/2-ja.length()/6-ja.length()/6);
+		wprintw(reply, kanjiExis.c_str());
 		wattron(reply,COLOR_PAIR(1));
 		wprintw(reply, ja.c_str());
 		wattroff(reply,COLOR_PAIR(1));
@@ -410,9 +438,28 @@ int queryEnToJa(WINDOW * queries, WINDOW * reply, WINDOW * uInput, WINDOW * user
 	else {
 		wattron(reply, COLOR_PAIR(1));
 		box(reply, 0, 0);
-		mvwprintw(reply,1, queriesWidth/2-en.length()/6-ja.length()/6-furi.length()/6-6, en.c_str());
 		wattroff(reply, COLOR_PAIR(1));
-		(furi.empty()) ? wprintw(reply, " -> %s",ja.c_str()) : wprintw(reply, " -> %s [%s]",ja.c_str(),furi.c_str()); 
+		int startReplyIdx;
+		string totReply;
+		(furi.empty()) ? (totReply=ja) : (totReply=ja+" ["+furi+"]");
+		startReplyIdx = queriesWidth/2 - totReply.length()/2;
+		totReply += " <- "+en;
+		startReplyIdx -= en.length()/2;
+		/* checking if reply text fits inside of reply window and if not adjust reply text */
+		if (startReplyIdx < 1){ 
+			string lenAdjstRply = totReply.substr(0,queriesWidth-5)+"..."; // length adjusted string, as it otherwise would not fit in reply window
+			startReplyIdx = queriesWidth/2-lenAdjstRply.length()/2;
+			mvwprintw(reply, 1, 1, lenAdjstRply.c_str());   
+		} 
+		else {
+			mvwprintw(reply, 1, startReplyIdx, totReply.c_str());   
+		}
+		/* checking if reply text fits inside of reply window and if not adjust reply text */
+			
+
+		//wmove(reply, 1, queriesWidth/2-en.length()/2-ja.length()/6-furi.length()/6-6);
+		//wprintw(reply, en.c_str());
+		//(furi.empty()) ? wprintw(reply, " -> %s",ja.c_str()) : wprintw(reply, " -> %s [%s]",ja.c_str(),furi.c_str()); 
 	}
 
 	wrefresh(reply);
