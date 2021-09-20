@@ -206,7 +206,7 @@ int queryJaToEn(WINDOW * queries, WINDOW * reply, WINDOW * uInput, WINDOW * user
 	mvwprintw(userStats, 0, 2, "Score");
 	/* header */
 	wattron(userStats, COLOR_PAIR(2));
-	mvwprintw(userStats, userStatsHeight/2, userStatsWidth/2-1, "%d",corUTrans);
+	mvwprintw(userStats, userStatsHeight/2, userStatsWidth/2-2, "%d",corUTrans);
 	wattroff(userStats, COLOR_PAIR(2));
 	wprintw(userStats, "/");
 	wprintw(userStats, "%d",curVoc);
@@ -223,13 +223,18 @@ int queryJaToEn(WINDOW * queries, WINDOW * reply, WINDOW * uInput, WINDOW * user
 		else if (u == ctrl('o')) return -1;
 	
 		else if ( (int) u == ctrl(KEY_BACKSPACE) ) { 
-			if (i>0) i-=1;
+			wmove(uInput, 0, 0);
+			wclrtoeol(uInput);
+			wmove(uInput, 0, 1);
+			std::fill(uTrans, uTrans+maxInputLen, 0); // reset uTrans 
+			i = -1;
 		}
 		
 		/* clear the whole line and delete all saved data in uTrans */
 		else if (u == ctrl('n')) {
-			wmove(uInput, 0, 1);
+			wmove(uInput, 0, 0);
 			wclrtoeol(uInput);
+			wmove(uInput, 0, 1);
 			std::fill(uTrans, uTrans+maxInputLen, 0); // reset uTrans 
 			i = -1;
 		}
@@ -276,11 +281,11 @@ int queryJaToEn(WINDOW * queries, WINDOW * reply, WINDOW * uInput, WINDOW * user
 
 		/* checking if reply text fits inside of reply window and if not adjust reply text */
 		if (startReplyIdx < 1){ 
-			string lenAdjstRply = totReply.substr(0,queriesWidth-5)+"..."; // length adjusted string, as it otherwise would not fit in reply window
-			mvwprintw(reply, 1, 1, lenAdjstRply.c_str());   
+			string lenAdjstRply = totReply.substr(0,queriesWidth-6)+"..."; // length adjusted string, as it otherwise would not fit in reply window
+			mvwprintw(reply, 2, 1, lenAdjstRply.c_str());   
 		} 
 		else {
-			mvwprintw(reply, 1, startReplyIdx, totReply.c_str());   
+			mvwprintw(reply, 2, startReplyIdx, totReply.c_str());   
 		}
 		/* checking if reply text fits inside of reply window and if not adjust reply text */
 			
@@ -292,19 +297,22 @@ int queryJaToEn(WINDOW * queries, WINDOW * reply, WINDOW * uInput, WINDOW * user
 		wattron(reply, COLOR_PAIR(1));
 		box(reply, 0, 0);
 		wattroff(reply, COLOR_PAIR(1));
-		string totReply; 
-		(furi.empty()) ? (totReply = ja) : (totReply = ja+" ["+furi+"]"); 
-		int startReplyIdx = queriesWidth/2-totReply.length()/2;
-		totReply+=" -> "+remainTrans;
-		startReplyIdx -= remainTrans.length()/2;
-		
+		string jpReply; 
+
+		(furi.empty()) ? (jpReply = ja) : (jpReply = ja+" ["+furi+"]"); 
+		int jpReplyIdx = queriesWidth/2 - jpReply.length()/2;
+		wattron(reply, COLOR_PAIR(1));
+		mvwprintw(reply, 1, jpReplyIdx, jpReply.c_str());
+		wattroff(reply, COLOR_PAIR(1));
+
+		int enReplyIdx = queriesWidth/2-remainTrans.length()/2;
 		/* checking if reply text fits inside of reply window and if not adjust reply text */
-		if (startReplyIdx < 1){ 
-			string lenAdjstRply = totReply.substr(0,queriesWidth-5)+"..."; // length adjusted string, as it otherwise would not fit in reply window
-			mvwprintw(reply, 1, 1, lenAdjstRply.c_str());   
+		if (enReplyIdx < 1){ 
+			string lenAdjstRply = remainTrans.substr(0,queriesWidth-5)+"..."; // length adjusted string, as it otherwise would not fit in reply window
+			mvwprintw(reply, 3, 1, lenAdjstRply.c_str());   
 		} 
 		else {
-			mvwprintw(reply, 1, startReplyIdx, totReply.c_str());   
+			mvwprintw(reply, 3, enReplyIdx, remainTrans.c_str());   
 		}
 		/* checking if reply text fits inside of reply window and if not adjust reply text */
 	}
@@ -396,7 +404,7 @@ int queryEnToJa(WINDOW * queries, WINDOW * reply, WINDOW * uInput, WINDOW * user
 	mvwprintw(userStats, 0, 2, "Score");
 	/* header */
 	wattron(userStats, COLOR_PAIR(2));
-	mvwprintw(userStats, userStatsHeight/2, userStatsWidth/2-1, "%d", corUTrans);
+	mvwprintw(userStats, userStatsHeight/2, userStatsWidth/2-2, "%d", corUTrans);
 	wattroff(userStats, COLOR_PAIR(2));
 	wprintw(userStats, "/");
 	wprintw(userStats, "%d",curVoc);
@@ -436,7 +444,7 @@ int queryEnToJa(WINDOW * queries, WINDOW * reply, WINDOW * uInput, WINDOW * user
 		wattron(reply, COLOR_PAIR(2));
 		box(reply, 0, 0);
 		wattroff(reply, COLOR_PAIR(2));
-		mvwprintw(reply, 1, queriesWidth/2-answer0.length()/2, answer0.c_str());
+		mvwprintw(reply, 2, queriesWidth/2-answer0.length()/2, answer0.c_str());
 	}
 	else if ( isSubSet(uTrans, furi) && (!furi.empty()) ) {
 		++corUTrans;
@@ -444,7 +452,7 @@ int queryEnToJa(WINDOW * queries, WINDOW * reply, WINDOW * uInput, WINDOW * user
 		wattron(reply, COLOR_PAIR(2));
 		box(reply, 0, 0);
 		wattroff(reply, COLOR_PAIR(2));
-		wmove(reply, 1, queriesWidth/2-kanjiExis.length()/2-ja.length()/6-ja.length()/6);
+		wmove(reply, 2, queriesWidth/2-kanjiExis.length()/2-ja.length()/6-ja.length()/6);
 		wprintw(reply, kanjiExis.c_str());
 		wattron(reply,COLOR_PAIR(1));
 		wprintw(reply, ja.c_str());
@@ -454,21 +462,26 @@ int queryEnToJa(WINDOW * queries, WINDOW * reply, WINDOW * uInput, WINDOW * user
 		wattron(reply, COLOR_PAIR(1));
 		box(reply, 0, 0);
 		wattroff(reply, COLOR_PAIR(1));
-		int startReplyIdx;
-		string totReply;
-		(furi.empty()) ? (totReply=ja) : (totReply=ja+" ["+furi+"]");
-		startReplyIdx = queriesWidth/2 - totReply.length()/2;
-		totReply += " <- "+en;
-		startReplyIdx -= en.length()/2;
+		int jpReplyIdx;
+		int enReplyIdx;
+		string jpReply;
+
+		(furi.empty()) ? (jpReply=ja) : (jpReply=ja+" ["+furi+"]");
+		jpReplyIdx = queriesWidth/2 - jpReply.length()/2;
+		mvwprintw(reply, 3, jpReplyIdx, jpReply.c_str());
+
+		enReplyIdx = queriesWidth/2-en.length()/2;
+		wattron(reply, COLOR_PAIR(1));
 		/* checking if reply text fits inside of reply window and if not adjust reply text */
-		if (startReplyIdx < 1){ 
-			string lenAdjstRply = totReply.substr(0,queriesWidth-5)+"..."; // length adjusted string, as it otherwise would not fit in reply window
+		if (enReplyIdx < 1){ 
+			string lenAdjstRply = en.substr(0,queriesWidth-5)+"..."; // length adjusted string, as it otherwise would not fit in reply window
 			mvwprintw(reply, 1, 1, lenAdjstRply.c_str());   
 		} 
 		else {
-			mvwprintw(reply, 1, startReplyIdx, totReply.c_str());   
+			mvwprintw(reply, 1, enReplyIdx, en.c_str());   
 		}
 		/* checking if reply text fits inside of reply window and if not adjust reply text */
+		wattroff(reply, COLOR_PAIR(1));
 	}
 
 	wrefresh(reply);
@@ -561,7 +574,7 @@ void queryAll(string dict,int uOption) {
 
 	/* reply window */
 	int replyHeight, replyWidth, replyY, replyX;
-	replyHeight = 3;
+	replyHeight = 5;
 	replyWidth = 60;
 	replyY = 2*maxY/4-replyHeight/2;
 	replyX = maxX/2-replyWidth/2;
