@@ -194,26 +194,6 @@ int queryJaToEn(WINDOW * queries, WINDOW * reply, WINDOW * uInput, WINDOW * user
 	wrefresh(queries);
 	/* print query */
 
-	/* fill stats window */
-	/* box */
-	wclear(userStats);
-	wclear(userStats);
-	wattron(userStats, COLOR_PAIR(4));
-	box(userStats, 0, 0);
-	wattroff(userStats, COLOR_PAIR(4));
-	/* box */
-	/* header */
-	mvwprintw(userStats, 0, 2, "Score");
-	/* header */
-	wattron(userStats, COLOR_PAIR(2));
-	mvwprintw(userStats, userStatsHeight/2, userStatsWidth/2-2, "%d",corUTrans);
-	wattroff(userStats, COLOR_PAIR(2));
-	wprintw(userStats, "/");
-	wprintw(userStats, "%d",curVoc);
-	string userStatsMessage = "Total: ";
-	mvwprintw(userStats, userStatsHeight-1, 1, "%s%d",userStatsMessage.c_str(),Vocs.vocNum);
-	wrefresh(userStats);
-	/* fill stats window */
 
 	wmove(uInput, 0, 1);
 	/* get user input */
@@ -223,11 +203,12 @@ int queryJaToEn(WINDOW * queries, WINDOW * reply, WINDOW * uInput, WINDOW * user
 		else if (u == ctrl('o')) return -1;
 	
 		else if ( (int) u == ctrl(KEY_BACKSPACE) ) { 
-			wmove(uInput, 0, 0);
-			wclrtoeol(uInput);
-			wmove(uInput, 0, 1);
-			std::fill(uTrans, uTrans+maxInputLen, 0); // reset uTrans 
-			i = -1;
+			if (i>0) {
+				wmove(uInput, 0, i);
+				wclrtoeol(uInput);
+				uTrans[i] = 0; // empty corresponding uTrans entry
+				i-=2;
+			}
 		}
 		
 		/* clear the whole line and delete all saved data in uTrans */
@@ -260,6 +241,7 @@ int queryJaToEn(WINDOW * queries, WINDOW * reply, WINDOW * uInput, WINDOW * user
 	/* get user input */
 
 	wclear(reply);
+
 	/* getting all remaining translations and store them in a string separated by semicolons */
 	string remainTrans;
 	string delim = ";";
@@ -333,6 +315,7 @@ int queryJaToEn(WINDOW * queries, WINDOW * reply, WINDOW * uInput, WINDOW * user
 	/* header */
 	mvwprintw(userStats, 0, 2, "Statistics");
 	/* header */
+	string userStatsMessage = "Total: ";
 	wattron(userStats, COLOR_PAIR(2));
 	mvwprintw(userStats, userStatsHeight/2, userStatsWidth/2-1, "%d",corUTrans);
 	wattroff(userStats, COLOR_PAIR(2));
@@ -394,42 +377,25 @@ int queryEnToJa(WINDOW * queries, WINDOW * reply, WINDOW * uInput, WINDOW * user
 	wrefresh(queries);
 	/* print query */
 	
-	/* fill stats window */
-	/* box */
-	wattron(userStats, COLOR_PAIR(4));
-	box(userStats, 0, 0);
-	wattroff(userStats, COLOR_PAIR(4));
-	/* box */
-	/* header */
-	mvwprintw(userStats, 0, 2, "Score");
-	/* header */
-	wattron(userStats, COLOR_PAIR(2));
-	mvwprintw(userStats, userStatsHeight/2, userStatsWidth/2-2, "%d", corUTrans);
-	wattroff(userStats, COLOR_PAIR(2));
-	wprintw(userStats, "/");
-	wprintw(userStats, "%d",curVoc);
-	string userStatsMessage = "Total: ";
-	mvwprintw(userStats, userStatsHeight-1, 1, "%s%d",userStatsMessage.c_str(),Vocs.vocNum);
-	wrefresh(userStats);
-	/* fill stats window */
-		
 	wmove(uInput, 0, 1);
 	/* get user input */
 	for (int i=0;i<maxInputLen;++i) {
 		char u = wgetch(uInput);
 		if (u == 13) break;
 		else if (u == ctrl('o')) return -1;
-		else if (u == 127) {
-			if (i>0) {
-				i-=2;
-				wdelch(uInput);
-			}
+		else if ((int) u == ctrl(KEY_BACKSPACE)) {
+			wmove(uInput, 0, 0);
+			wclrtoeol(uInput);
+			wmove(uInput, 0, 1);
+			std::fill(uTrans, uTrans+maxInputLen, 0); // reset uTrans 
+			i = -1;
 		}
 		/* clear the whole line and delete all saved data in uTrans */
 		else if (u == ctrl('n')) {
-			wmove(uInput, 0, 1);
+			wmove(uInput, 0, 0);
 			wclrtoeol(uInput);
-			std::fill(uTrans, uTrans+maxInputLen, 0);
+			wmove(uInput, 0, 1);
+			std::fill(uTrans, uTrans+maxInputLen, 0); // reset uTrans 
 			i = -1;
 		}
 		else uTrans[i] = u;
@@ -499,6 +465,7 @@ int queryEnToJa(WINDOW * queries, WINDOW * reply, WINDOW * uInput, WINDOW * user
 	/* header */
 	mvwprintw(userStats, 0, 2, "Statistics");
 	/* header */
+	string userStatsMessage = "Total: ";
 	wattron(userStats, COLOR_PAIR(2));
 	mvwprintw(userStats, userStatsHeight/2, userStatsWidth/2-1, "%d", corUTrans);
 	wattroff(userStats, COLOR_PAIR(2));
