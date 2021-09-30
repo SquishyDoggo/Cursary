@@ -189,7 +189,7 @@ int queryJaToEn(WINDOW * queries, WINDOW * reply, WINDOW * uInput, WINDOW * user
 	string en = Vocs.en[idx];
 	string furi = Vocs.furi[idx];
 	wattron(queries,COLOR_PAIR(1));
-	mvwprintw(queries, 1, queriesWidth/2-ja.length()/3, ja.c_str()); // divided by 6 because one ja char has a length of 3
+	mvwprintw(queries, 1, queriesWidth/2 - ja.length()/3, ja.c_str()); // divided by 6 because one ja char has a length of 3
 	wattroff(queries,COLOR_PAIR(1));
 	wrefresh(queries);
 	/* print query */
