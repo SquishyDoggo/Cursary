@@ -156,6 +156,30 @@ void mkInputBox(WINDOW * winName) {
 	wrefresh(winName);
 }
 
+void mkRisingPoints(){
+	noecho(); curs_set(false);	
+
+	string point = "1";
+	int y = 30;
+
+	WINDOW * xp = newwin(10, 1, 20, 40);
+	refresh();
+
+	init_pair(2, COLOR_GREEN, COLOR_BLACK);
+	wattron(xp,COLOR_PAIR(2));
+	while (y>21) {
+		--y;
+		wmove(xp, y, 1);
+		wprintw(xp,point.c_str());
+		wrefresh(xp);
+		wmove(xp, y, 0);
+		usleep(1E4);
+		wclrtoeol(xp);
+	}
+	wattroff(xp,COLOR_PAIR(2));
+	wclear(xp);
+}
+
 /**
  * Queries the user for a single japanese to english translation
  *
@@ -242,12 +266,12 @@ int queryJaToEn(WINDOW * queries, WINDOW * reply, WINDOW * uInput, WINDOW * user
 
 	wclear(reply);
 
-	/* getting all remaining translations and store them in a string separated by semicolons */
+	/* getting all remaining translations and storing them in a string separated by semicolons */
 	string remainTrans;
 	string delim = ";";
 	vector<string> remTrans = getRemTrans(uTrans, en);
 	for (int i=0;i<remTrans.size();++i) (i==0) ? remainTrans += remTrans[i] : remainTrans += delim+remTrans[i];
-	/* getting all remaining translations and store them in a string separated by semicolons */
+	/* getting all remaining translations and storing them in a string separated by semicolons */
 
 	/* if translation is correct */
 	if (isSubSet(uTrans, en)) {
@@ -586,13 +610,14 @@ void queryAll(string dict,int uOption) {
 	for (int t=0; t<Vocs.vocNum;++t) indexes.push_back(t);	
 	std::random_shuffle(indexes.begin(),indexes.end());
 	/* to query in a random order */
+	int status = 0;
 	
 	if (uOption == 0) {
 		wattron(stdscr, COLOR_PAIR(3));
 		mvwprintw(stdscr,0, 2, opt1.c_str());
 		wattroff(stdscr, COLOR_PAIR(3));
 		for (int i=0; i<Vocs.vocNum; ++i) {
-			int status = queryJaToEn(queries, reply, uInput, userStats, Vocs, indexes[i],i);
+			status = queryJaToEn(queries, reply, uInput, userStats, Vocs, indexes[i],i);
 			if (status == -1) break;
 		} 
 	}
@@ -601,7 +626,7 @@ void queryAll(string dict,int uOption) {
 		mvwprintw(stdscr,0, 2, opt2.c_str());
 		wattroff(stdscr, COLOR_PAIR(3));
 		for (int i=0; i<Vocs.vocNum; ++i) {
-			int status = queryEnToJa(queries, reply, uInput, userStats, Vocs, indexes[i],i);
+			status = queryEnToJa(queries, reply, uInput, userStats, Vocs, indexes[i],i);
 			if (status == -1) break;
 		}
 	}
@@ -610,11 +635,12 @@ void queryAll(string dict,int uOption) {
 		mvwprintw(stdscr,0, 2, opt3.c_str());
 		wattroff(stdscr, COLOR_PAIR(3));
 		for (int i=0; i<Vocs.vocNum; ++i) {
-			int status = queryMixed(queries, reply, uInput, userStats, Vocs, indexes[i],i);
+			status = queryMixed(queries, reply, uInput, userStats, Vocs, indexes[i],i);
 			if (status == -1) break;
 		}
 	}
 
+	if (status != -1) getch();
 	corUTrans = 0;
 }
 
@@ -660,22 +686,28 @@ int selectionMenu(WINDOW * opts, vector<string> choices) {
  */
 string dictSelect(string projectDir) {
 	int y,x;
+	int dictSelectH, dictSelectW;
 	int choice;
 	vector<string> dicts;
 	string dictsDir = "/dicts";
 	getmaxyx(stdscr, y, x);
-	WINDOW * dictsSelect = newwin(8, 20, y/3, 2*x/3);
+	projectDir += dictsDir;
+	/* get all file names in dictionary subfolder */
+	for (const auto & entry : std::filesystem::directory_iterator(projectDir)){
+		string dictFileName = entry.path();
+		dictFileName.erase(0,dictFileName.find_last_of('/')+1);
+		dicts.push_back(dictFileName);
+	}
+	/* get all file names in dictionary subfolder */
+	/* dictionary select window */
+	dictSelectW = 20;
+	dictSelectH = 2*dicts.size()+3;
+	WINDOW * dictsSelect = newwin(dictSelectH, dictSelectW, y/2-dictSelectH, 2*x/3);
 	refresh();
 	box(dictsSelect, 0, 0);
 	wrefresh(dictsSelect);
 	mvwprintw(dictsSelect, 0, 2, "Dictionaries");
-	projectDir += dictsDir;
-	/* get all file names in dictionary subfolder */
-	for (const auto & entry : std::filesystem::directory_iterator(projectDir)){
-		string yo = entry.path();
-		yo.erase(0,yo.find_last_of('/')+1);
-		dicts.push_back(yo);
-	}
+	/* dictionary select window */
 	choice = selectionMenu(dictsSelect, dicts);
 	werase(dictsSelect);
 	return dicts[choice];
@@ -688,10 +720,9 @@ string dictSelect(string projectDir) {
  * @param query2 Query type prompting english to japanese translations
  * @param query3 Query type prompting mixed translations
  * @param exit Option to quit the program
- * @param optsHeight Height of the options window
  * @return Number of the selected option
  */
-int mkOptsWin(string query1, string query2, string query3, string exit, string dicts, int optsHeight){
+int mkOptsWin(string query1, string query2, string query3, string exit, string dicts){
 	curs_set(false); cbreak(); noecho(); nonl(); intrflush(stdscr, false); keypad(stdscr, true);
 	clear();
 
@@ -701,6 +732,7 @@ int mkOptsWin(string query1, string query2, string query3, string exit, string d
 
 	int maxY, maxX; getmaxyx(stdscr, maxY, maxX);
 	int optsWidth = query3.length()+7;
+	int optsHeight = 13;
 	WINDOW* opts = newwin(optsHeight, optsWidth, maxY/2-optsHeight, maxX/2-optsWidth/2);
 	refresh();
 
@@ -801,7 +833,7 @@ int main(int argc, char** argv) {
 			start_color();
 			mkStartWin("Cursary: Your Friendly Neighborhood Voc Trainer", "Insert Coin");
 		while (true) {
-			char uOption = mkOptsWin(opt1,opt2,opt3,opt4,opt5,13);
+			char uOption = mkOptsWin(opt1,opt2,opt3,opt4,opt5);
 			if (uOption == 4) break;
 			else if (uOption == 3) dict = buffer+dictSubDir+dictSelect(buffer);
 			else if ( (uOption==0)||(uOption==1)||(uOption==2) ) queryAll(dict,uOption);
